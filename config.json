@@ -1,0 +1,80 @@
+{
+  "execute" : {
+    "dbquery" : {
+    },
+    "command" : {
+      "enable" : true
+    }
+  },
+  "db" : {
+    "connections" : [
+      {
+        "name" : "con1",
+        "type" : "mysql",
+        "config" : {
+        }
+      },
+      {
+        "name" : "con2",
+        "type" : "mysql",
+        "config" : {
+            "host"     : "10.0.1.9",
+            "user"     : "root",
+            "password" : "",
+            "database" : "play"
+        }
+      },
+      {
+        "name" : "con1",
+        "type" : "mongodb",
+        "config" : {
+        }
+      },
+      {
+        "name" : "con2",
+        "type" : "mongodb",
+        "config" : {
+            "url": "mongodb://localhost/vrest"
+        }
+      },
+      {
+        "name" : "con1",
+        "type" : "mssql",
+        "config" : {
+        }
+      },
+      {
+        "name" : "con2",
+        "type" : "mssql",
+        "config" : {
+            "server"     : "10.0.1.15",
+            "user"     : "sa",
+            "password" : "sa123",
+            "database" : "hello"
+        }
+      },
+      {
+        "name" : "con1",
+        "type" : "postgres",
+        "config" : {
+        }
+      },
+      {
+        "name" : "con2",
+        "type" : "postgres",
+        "config" : {
+            "host"     : "10.0.1.9",
+            "user"     : "postgres",
+            "password" : "admin",
+            "database" : "jira"
+        }
+      },
+      {
+        "name" : "con1",
+        "type" : "oracle",
+        "config" : {
+        }
+      }
+    ]
+  }
+}
