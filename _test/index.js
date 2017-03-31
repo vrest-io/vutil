@@ -78,7 +78,7 @@ async.parallel([
       json : { query : '55', connName : 'con1' }
     }, function(err,res,body){
       assert(res.statusCode === 400);
-      assert.equal(body._,'error connecting `con1` : connect ECONNREFUSED 127.0.0.1:3306');
+      assert(body._.indexOf('error connecting') !== -1);
       cb();
     });
   },
@@ -93,7 +93,7 @@ async.parallel([
           { Tables_in_play: 'troop' }, { Tables_in_play: 'user' }, { Tables_in_play: 'user_troop' } ]);
       } else {
         assert(res.statusCode === 400);
-        assert.equal(body._,'error connecting `con2` : connect ECONNREFUSED 127.0.0.1:3306');
+        assert(body._.indexOf('error connecting') !== -1);
       }
       cb();
     });
@@ -117,7 +117,7 @@ async.parallel([
         assert.equal(body._,null);
       } else {
         assert(res.statusCode === 400);
-        assert.equal(body._,'error connecting `con1` : failed to connect to server [localhost:27017] on first connect [MongoError: connect ECONNREFUSED 127.0.0.1:27017]');
+        assert(body._.indexOf('error connecting') !== -1);
       }
       cb();
     });
@@ -132,7 +132,7 @@ async.parallel([
         assert.equal(body._,null);
       } else {
         assert(res.statusCode === 400);
-        assert.equal(body._,'error connecting `con1` : failed to connect to server [localhost:27017] on first connect [MongoError: connect ECONNREFUSED 127.0.0.1:27017]');
+        assert(body._.indexOf('error connecting') !== -1);
       }
       cb();
     });
@@ -158,7 +158,7 @@ async.parallel([
         assert.deepEqual(body._,{ n: 1, ok: 1 });
       } else {
         assert(res.statusCode === 400);
-        assert.equal(body._,'error connecting `con2` : failed to connect to server [localhost:27017] on first connect [MongoError: connect ECONNREFUSED 127.0.0.1:27017]');
+        assert(body._.indexOf('error connecting') !== -1);
       }
       cb();
     });
@@ -169,7 +169,7 @@ async.parallel([
       json : { query : '55' }
     }, function(err,res,body){
       assert(res.statusCode === 400);
-      assert.equal(body._,'error connecting `con1` : Failed to connect to localhost:1433 - connect ECONNREFUSED 127.0.0.1:1433');
+      assert(body._.indexOf('error connecting') !== -1);
       cb();
     });
   },
@@ -193,7 +193,7 @@ async.parallel([
         assert.deepEqual(body._,[]);
       } else {
         assert(res.statusCode === 400);
-        assert.equal(body._,'error connecting `con2` : connect ECONNREFUSED 127.0.0.1:3306');
+        assert(body._.indexOf('error connecting') !== -1);
       }
       cb();
     });
@@ -204,7 +204,7 @@ async.parallel([
       json : { query : '55' }
     }, function(err,res,body){
       assert(res.statusCode === 400);
-      assert.equal(body._,'error connecting `con1` : connect ECONNREFUSED 127.0.0.1:5432');
+      assert(body._.indexOf('error connecting') !== -1);
       cb();
     });
   },
@@ -228,7 +228,7 @@ async.parallel([
         assert.deepEqual(body._.command,'SELECT');
       } else {
         assert(res.statusCode === 400);
-        assert.equal(body._,'error connecting `con2` : connect ECONNREFUSED 127.0.0.1:3306');
+        assert(body._.indexOf('error connecting') !== -1);
       }
       cb();
     });
@@ -239,7 +239,7 @@ async.parallel([
       json : { query : '55' }
     }, function(err,res,body){
       assert(res.statusCode === 400);
-      assert.equal(body._,'error connecting `con1` : error');
+      assert(body._.indexOf('error connecting') !== -1);
       cb();
     });
   },
@@ -265,10 +265,11 @@ async.parallel([
   function(cb){
     req.post({
       url : BU+'execute/command',
-      json : { command : '2304234' }
+      json : { command : 'r9803jfe' }
     } ,function(err,res,body){
       assert(res.statusCode === 400);
-      assert.equal(body.error,'/bin/sh: 2304234: command not found\n');
+      assert(body.error.indexOf('not') !== -1);
+      assert(body.error.indexOf('command') !== -1);
       cb();
     });
   },
@@ -389,7 +390,7 @@ async.parallel([
       }
     },function(err,res,body){
       assert(res.statusCode === 200);
-      assert.deepEqual(body,{ error: { errno: -2, code: 'ENOENT', syscall: 'open', path: 'ab' } });
+      assert.equal(body.error.code,'ENOENT');
       cb();
     });
   },
@@ -404,7 +405,7 @@ async.parallel([
       }
     },function(err,res,body){
       assert(res.statusCode === 200);
-      assert.deepEqual(body,{ error: { errno: -2, code: 'ENOENT', syscall: 'open', path: 'ab' } });
+      assert.equal(body.error.code,'ENOENT');
       cb();
     });
   },
@@ -419,7 +420,7 @@ async.parallel([
       }
     },function(err,res,body){
       assert(res.statusCode === 200);
-      assert.deepEqual(body,{ error: { errno: -2, code: 'ENOENT', syscall: 'open', path: 'ab' } });
+      assert.equal(body.error.code,'ENOENT');
       cb();
     });
   },

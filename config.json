@@ -18,7 +18,7 @@
         "name" : "con2",
         "type" : "mysql",
         "config" : {
-            "host"     : "10.0.1.9",
+            "host"     : "localhost",
             "user"     : "root",
             "password" : "",
             "database" : "play"
@@ -47,7 +47,7 @@
         "name" : "con2",
         "type" : "mssql",
         "config" : {
-            "server"     : "10.0.1.15",
+            "server"     : "localhost",
             "user"     : "sa",
             "password" : "sa123",
             "database" : "hello"
@@ -63,7 +63,7 @@
         "name" : "con2",
         "type" : "postgres",
         "config" : {
-            "host"     : "10.0.1.9",
+            "host"     : "localhost",
             "user"     : "postgres",
             "password" : "admin",
             "database" : "jira"
