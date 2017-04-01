@@ -5,7 +5,7 @@ const async = require('async'),
       BU = 'http://localhost:3000/',
       DBS = process.env.DBS || '';
 
-async.parallel([
+async.series([
   function(cb){
     req(BU,function(err,res,body){
       assert(res.statusCode === 200);

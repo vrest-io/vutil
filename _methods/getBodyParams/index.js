@@ -5,6 +5,7 @@ function func(vars,methods,req,res){
     if(typeof json === 'object' && json !== null){
       vars.params.body = json;
     }
+    console.log('emittting... ', vars.requestId);
     req.emit('body-recieved');
   };
   jsonBody(req,res,func);
