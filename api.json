@@ -29,14 +29,12 @@
       },
       "locale":{
         "@" : "whichLocale"
+      },
+      "params":{
+        "@" : "getBodyParams"
       }
     },
     "execute":{
-      "+":{
-        "params":{
-          "@" : "getBodyParams"
-        }
-      },
       "dbquery":{
         ":conn" : {
           "=":[
@@ -89,26 +87,29 @@
       }
     },
     "convert":{
-      "+":{
-        "params":{
-          "@" : "getFileParams"
-        }
-      },
       "csv":{
         "json":{
+          "=":[
+            [
+              "body-recieved",
+              {
+                "@":"isStr",
+                "#":"{{params.body.filePath}}"
+              },
+              {
+                "@" : "missingParamMsg",
+                "#": "filePath"
+              }
+            ]
+          ],
           "c$":{
-            "!" : "files-recieved",
+            "!" : "body-recieved",
             "@":"csvtojson"
           }
         }
       }
     },
     "upload":{
-      "+":{
-        "params":{
-          "@" : "getBodyParams"
-        }
-      },
       "=":[
         [
           "body-recieved",

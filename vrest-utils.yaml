@@ -9,7 +9,7 @@ info:
     2. Execute DB CRUD operations via REST API for Database Validation
     3. Convert CSV to JSON via REST API and is useful in data driven testing
     4. Uploads file via REST API which was missing in vREST itself.
-    
+
     All file paths must be relative to configured data directory. Data Directory can be anywhere on your system. You may version control this data directory at your own choice. Examples of file paths are as follows:
     1. $dataDir/csvs/create-contact.csv
     2. $dataDir/files/sample-file.png
@@ -32,7 +32,7 @@ paths:
         This API will execute the system command specified and returns command response.
       parameters:
         - name: command
-          in: formData
+          in: body
           description: System command to be executed
           required: true
           type: string
@@ -41,27 +41,27 @@ paths:
           description: Command Response
           schema:
             $ref: '#/definitions/CommandResponse'
-        102:
-          description: Timeout Response. If the command takes time to execute, then this response will be returned after the configured timeout period. 
+        408:
+          description: Timeout Response. If the command takes time to execute, then this response will be returned after the configured timeout period.
           schema:
             $ref: '#/definitions/TimeoutResponse'
         400:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
-  /execute/db-query:
+  /execute/dbquery/:conn:
     post:
       summary: Executes a database query
       description: |
-        This API will execute the database query specified and returns the results as JSON. 
+        This API will execute the database query specified and returns the results as JSON.
       parameters:
         - name: query
-          in: formData
+          in: body
           description: Database query to be executed
           required: true
           type: string
-        - name: connection_name
-          in: formData
+        - name: connName
+          in: body
           description: Name of database connection, which will be used to execute the database query.
           required: true
           type: string
@@ -69,43 +69,41 @@ paths:
         200:
           description: Database Query Result
           schema:
-            type: object
-        102:
-          description: Timeout Response. If the command takes time to execute, then this response will be returned after the configured timeout period. 
+            $ref: '#/definitions/DbResult'
+        408:
+          description: Timeout Response. If the command takes time to execute, then this response will be returned after the configured timeout period.
           schema:
             $ref: '#/definitions/TimeoutResponse'
         400:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
-  /convert/csv-to-json:
+  /convert/csv/json:
     post:
       summary: Converts csv file to JSON
-      description: This API converts the specified csv file into JSON format. 
+      description: This API converts the specified csv file into JSON format.
       parameters:
-        - name: file_path
-          in: formData
+        - name: filePath
+          in: body
           description: CSV File path to be converted
           required: true
-          type: string
-        - name: separator
-          in: formData
-          description: CSV separator, default is comma
-          required: false
           type: string
       responses:
         200:
           description: Converted JSON file
           schema:
-            type: array
-            items:
-              type: object
+            type : object
+            properties:
+              _:
+                type: array
+                items:
+                  type: object
         400:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
   /upload:
-    get:
+    post:
       summary: Uploads a file
       description: This API will execute a multipart request as specified by the data.
       parameters:
@@ -123,6 +121,12 @@ paths:
         default:
           description: Upload API response
 definitions:
+  DbResult:
+    type: object
+    properties:
+      _:
+        type: object
+        description: Database Query Result
   TimeoutResponse:
     type: object
     properties:
@@ -138,7 +142,7 @@ definitions:
       pid:
         type: number
         description: Process id which is executed
-      output:
+      _:
         type: string
         description: Command output
   UploadRequest:
@@ -147,20 +151,17 @@ definitions:
       method:
         type: string
         description: Request Method to be executed.
-      url: 
+      url:
         type: string
-        description: Upload API request URL
-      headers: 
+        description: Upload API request URL. including the querystring.
+      headers:
         type: object
         description: Request header key-value pairs, where key is header name and value is header value. if the request header "Content-Type" is specified then that header will be used otherwise header value "multipart/form-data" will be used.
-      querystring:
-        type: string
-        description: Query string to be used.
       body:
         type: object
-        description: Request formData key-value pairs, where key is the parameter name and value is parameter value. If the parameter value is a file path then actual file data will be used instead.
+        description: Request formData key-value pairs, where key is the parameter name and value is parameter value.
   Error:
     type: object
     properties:
-      message:
+      _:
         type: string

@@ -17,6 +17,7 @@ function func(vars,methods,req,res,next){
   }
   request.post({
     url:vars.params.body.url,
+    headers : vars.params.body.headers,
     formData: formData
   },function(err,res,body){
     next({ error : err, _ : (body || (res && res.body))});

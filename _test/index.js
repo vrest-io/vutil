@@ -1,5 +1,9 @@
-const async = require('async'), req = require('request').defaults({ json : true }),
-      assert = require('assert'), BU = 'http://localhost:3000/', DBS = process.env.DBS || '';
+const async = require('async'),
+      req = require('request').defaults({ json : true }),
+      path = require('path'),
+      assert = require('assert'),
+      BU = 'http://localhost:3000/',
+      DBS = process.env.DBS || '';
 
 async.parallel([
   function(cb){
@@ -268,8 +272,8 @@ async.parallel([
       json : { command : 'r9803jfe' }
     } ,function(err,res,body){
       assert(res.statusCode === 400);
-      assert(body.error.indexOf('not') !== -1);
-      assert(body.error.indexOf('command') !== -1);
+      assert(body._.indexOf('not') !== -1);
+      assert(body._.indexOf('command') !== -1);
       cb();
     });
   },
@@ -304,9 +308,16 @@ async.parallel([
     });
   },
   function(cb){
+    req.post(BU+'convert/csv/json',function(err,res,body){
+      assert(res.statusCode === 400);
+      assert.equal(body._,'Parameter `filePath` was missing in request.');
+      cb();
+    });
+  },
+  function(cb){
     req.post({
       url:BU+'convert/csv/json',
-      formData: { afile : require('fs').createReadStream(__dirname+'/one.csv') }
+      json: { filePath : path.join(__dirname,'one.csv') }
     },function(err,res,body){
       assert(res.statusCode === 200);
       assert.deepEqual(body,{ _: [ { a: '1', b: '2', c: '3' } ] });
