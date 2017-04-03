@@ -12,7 +12,7 @@
     "mssql": "^3.3.0",
     "mysql": "^2.13.0",
     "pg": "^6.1.5",
-    "json2server": "^0.0.3",
+    "json2server": "^0.0.4",
     "request": "^2.81.0"
   },
   "devDependencies": {

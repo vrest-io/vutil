@@ -15,12 +15,28 @@ function func(vars,methods,req,res,next){
     }
     formData[fl] = fs.createReadStream(vars.params.body.filePath);
   }
-  request.post({
-    url:vars.params.body.url,
+  request({
+    method : vars.params.body.method,
+    url: vars.params.body.url,
     headers : vars.params.body.headers,
     formData: formData
   },function(err,res,body){
-    next({ error : err, _ : (body || (res && res.body))});
+    var rs = {};
+    if(err) {
+      rs.error = err;
+    }
+    if(body){
+      rs._ = body;
+    }
+    if(res){
+      if(res.statusCode) {
+        rs.statusCode = res.statusCode;
+      }
+      if(!(rs._) && res.body){
+        rs._ = res.body;
+      }
+    }
+    next(rs);
   });
 }
 

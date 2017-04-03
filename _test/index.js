@@ -5,7 +5,7 @@ const async = require('async'),
       BU = 'http://localhost:3000/',
       DBS = process.env.DBS || '';
 
-async.series([
+async.parallel([
   function(cb){
     req(BU,function(err,res,body){
       assert(res.statusCode === 200);
@@ -446,7 +446,8 @@ async.series([
       }
     },function(err,res,body){
       assert(res.statusCode === 200);
-      assert.deepEqual(body,{ error: null, _ : {  _ : [ { a: '1', b: '2', c: '3' } ]  } });
+      assert.deepEqual(body,
+        { _: { _: 'Parameter `filePath` was missing in request.' }, statusCode: 400 });
       cb();
     });
   }
