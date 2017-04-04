@@ -302,6 +302,15 @@ async.parallel([
     });
   },
   function(cb){
+    req.post({
+      url : BU+'execute/command',
+      form : { command : 'ls -a' }
+    }, function(err,res,body){
+      assert(res.statusCode === 200);
+      cb();
+    });
+  },
+  function(cb){
     req.get(BU+'convert',function(err,res,body){
       assert(res.statusCode === 404);
       assert.equal(body.message,'Invalid request route.');
