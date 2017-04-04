@@ -26,14 +26,14 @@ function func(vars,methods,req,res,next){
       rs.error = err;
     }
     if(body){
-      rs._ = body;
+      rs.output = body;
     }
     if(res){
       if(res.statusCode) {
         rs.statusCode = res.statusCode;
       }
-      if(!(rs._) && res.body){
-        rs._ = res.body;
+      if(!(rs.output) && res.body){
+        rs.output = res.body;
       }
     }
     next(rs);

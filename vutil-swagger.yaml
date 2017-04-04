@@ -1,5 +1,4 @@
-bplist00—_WebMainResource’
-^WebResourceURL_WebResourceFrameName_WebResourceData_WebResourceMIMEType_WebResourceTextEncodingName_Bblob:http://editor.swagger.io/221bffc7-5f91-4f55-b853-b83fc473dcf5POÈ<html><head></head><body><pre style="word-wrap: break-word; white-space: pre-wrap;"># this is an example of the Uber API
+# this is an example of the Uber API
 # as a demonstration of an API spec in YAML
 swagger: '2.0'
 info:

@@ -8,10 +8,10 @@ function func(vars,methods,req,res,comd,next){
   childProcess = exec(comd, function (err, stdout, stderr) {
     result.pid = childProcess.pid;
     if (stderr || error !== null) {
-      result._ = stderr || error.message || error;
+      result.error = stderr || error.message || error;
       result.status = 400;
     } else {
-      result._ = stdout;
+      result.output = stdout;
       result.status = 200;
     }
     next(result);

@@ -1,7 +1,5 @@
 
-const driver = { getConnection : function(a,b){
-  b( { message : 'error' });
-} } || require('oracledb'), conf = {
+const driver = require('oracledb'), conf = {
   user          : "hr",
   password      : "welcome",
   connectString : "localhost/XE"
@@ -16,13 +14,13 @@ function func(vars,methods,req,res,next){
     driver.getConnection(hn,cb);
   }, function(ert,con){
     if(ert) {
-      next({ _ : (vars.$locale[vars.locale][ert] || ert), status : 400 });
+      next({ message : (vars.$locale[vars.locale][ert] || ert), status : 400 });
     } else {
       con.execute(query, function(err, recordset) {
         if(err) {
-          next({ _ : (vars.$locale[vars.locale].queryfail+(err.message || '')), status : 400 });
+          next({ message : (vars.$locale[vars.locale].queryfail+(err.message || '')), status : 400 });
         } else {
-          next({ _ : recordset, status : 200 });
+          next({ output : recordset, status : 200 });
         }
       });
     }

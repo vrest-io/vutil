@@ -15,14 +15,14 @@ function func(vars,methods,req,res,next){
     var hcn = new mssql.Connection(hn, function(err) { cb(err,hcn); });
   }, function(ert,con){
     if(ert) {
-      next({ _ : (vars.$locale[vars.locale][ert] || ert), status : 400 });
+      next({ message : (vars.$locale[vars.locale][ert] || ert), status : 400 });
     } else {
       var request = new mssql.Request(con);
       request.query(query, function(err, recordset) {
         if(err) {
-          next({ _ : (vars.$locale[vars.locale].queryfail+(err.message || '')), status : 400 });
+          next({ message : (vars.$locale[vars.locale].queryfail+(err.message || '')), status : 400 });
         } else {
-          next({ _ : recordset, status : 200 });
+          next({ output : recordset, status : 200 });
         }
       });
     }

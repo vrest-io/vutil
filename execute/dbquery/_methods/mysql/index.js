@@ -16,13 +16,13 @@ function func(vars,methods,req,res,next){
     hn.connect(function(er){ cb(er,hn); });
   }, function(ert,con){
     if(ert) {
-      next({ _ : (vars.$locale[vars.locale][ert] || ert), status : 400 });
+      next({ message : (vars.$locale[vars.locale][ert] || ert), status : 400 });
     } else {
       con.query(query,function(err,results){
         if(err) {
-          next({ _ : (vars.$locale[vars.locale].queryfail+(err.message || '')), status : 400 });
+          next({ message : (vars.$locale[vars.locale].queryfail+(err.message || '')), status : 400 });
         } else {
-          next({ _ : results, status : 200 });
+          next({ output : results, status : 200 });
         }
       });
     }

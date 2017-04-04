@@ -74,6 +74,15 @@
         "type" : "oracle",
         "config" : {
         }
+      },
+      {
+        "name" : "con2",
+        "type" : "oracle",
+        "config" : {
+            "connectString": "10.0.1.15/orcl",
+            "user"     : "rmsisdc1",
+            "password" : "oracle"
+        }
       }
     ]
   }

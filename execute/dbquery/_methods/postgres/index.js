@@ -19,13 +19,13 @@ function func(vars,methods,req,res,next){
     pool.connect(cb);
   }, function(ert,con){
     if(ert) {
-      next({ _ : (vars.$locale[vars.locale][ert] || ert), status : 400 });
+      next({ message : (vars.$locale[vars.locale][ert] || ert), status : 400 });
     } else {
       con.query(query, function(err, recordset) {
         if(err) {
-          next({ _ : (vars.$locale[vars.locale].queryfail+(err.message || '')), status : 400 });
+          next({ output : (vars.$locale[vars.locale].queryfail+(err.message || '')), status : 400 });
         } else {
-          next({ _ : recordset, status : 200 });
+          next({ output : recordset, status : 200 });
         }
       });
     }

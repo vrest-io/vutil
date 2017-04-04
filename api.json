@@ -3,6 +3,7 @@
     "name" : "vutil",
     "version" : "0.0.1",
     "deftimeout" : 5000,
+    "defKey" : "message",
     "supportEmail" : "support@vrest.io",
     "$locale":{
       "en":{
@@ -44,7 +45,7 @@
                 "#": "{{params.path.conn}}"
               },
               {
-                "_":"{{$locale.{{locale}}.connnotavail}}",
+                "message":"{{$locale.{{locale}}.connnotavail}}",
                 "status":400
               }
             ],

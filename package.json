@@ -11,8 +11,9 @@
     "mongodb": "^2.2.25",
     "mssql": "^3.3.0",
     "mysql": "^2.13.0",
+    "oracledb": "^1.13.0",
     "pg": "^6.1.5",
-    "json2server": "^0.0.4",
+    "json2server": "^0.0.5",
     "request": "^2.81.0"
   },
   "devDependencies": {

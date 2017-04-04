@@ -16,7 +16,7 @@ async.parallel([
   function(cb){
     req.post(BU,function(err,res,body){
       assert(res.statusCode === 404);
-      assert.equal(body._,'Invalid request route.');
+      assert.equal(body.message,'Invalid request route.');
       cb();
     });
   },
@@ -25,7 +25,7 @@ async.parallel([
       url : BU+'execute'
     }, function(err,res,body){
       assert(res.statusCode === 404);
-      assert.equal(body._,'Invalid request route.');
+      assert.equal(body.message,'Invalid request route.');
       cb();
     });
   },
@@ -34,7 +34,7 @@ async.parallel([
       url : BU+'execute/dbquery'
     }, function(err,res,body){
       assert(res.statusCode === 404);
-      assert.equal(body._,'Invalid request route.');
+      assert.equal(body.message,'Invalid request route.');
       cb();
     });
   },
@@ -43,7 +43,7 @@ async.parallel([
       url : BU+'execute/dbquery/mysql'
     }, function(err,res,body){
       assert(res.statusCode === 400);
-      assert.equal(body._,'Value of parameter `query` was not valid.');
+      assert.equal(body.message,'Value of parameter `query` was not valid.');
       cb();
     });
   },
@@ -52,7 +52,7 @@ async.parallel([
       url : BU+'execute/dbquery/mong'
     }, function(err,res,body){
       assert(res.statusCode === 400);
-      assert.equal(body._,'Connection not available. Please notify for connection setup at support@vrest.io.');
+      assert.equal(body.message,'Connection not available. Please notify for connection setup at support@vrest.io.');
       cb();
     });
   },
@@ -62,7 +62,7 @@ async.parallel([
       json : { query : '55' }
     } ,function(err,res,body){
       assert(res.statusCode === 404);
-      assert.equal(body._,'Invalid request route.');
+      assert.equal(body.message,'Invalid request route.');
       cb();
     });
   },
@@ -72,7 +72,7 @@ async.parallel([
       json : { query : '55', connName : '09u309u23' }
     },function(err,res,body){
       assert(res.statusCode === 400);
-      assert.equal(body._,'Please provide a valid connection name.');
+      assert.equal(body.message,'Please provide a valid connection name.');
       cb();
     });
   },
@@ -82,7 +82,7 @@ async.parallel([
       json : { query : '55', connName : 'con1' }
     }, function(err,res,body){
       assert(res.statusCode === 400);
-      assert(body._.indexOf('error connecting') !== -1);
+      assert(body.message.indexOf('error connecting') !== -1);
       cb();
     });
   },
@@ -93,11 +93,11 @@ async.parallel([
     }, function(err,res,body){
       if(DBS.indexOf('mysql') !== -1){
         assert(res.statusCode === 200);
-        assert.deepEqual(body._,[ { Tables_in_play: 'schema_version' },
+        assert.deepEqual(body.output,[ { Tables_in_play: 'schema_version' },
           { Tables_in_play: 'troop' }, { Tables_in_play: 'user' }, { Tables_in_play: 'user_troop' } ]);
       } else {
         assert(res.statusCode === 400);
-        assert(body._.indexOf('error connecting') !== -1);
+        assert(body.message.indexOf('error connecting') !== -1);
       }
       cb();
     });
@@ -107,7 +107,7 @@ async.parallel([
       url : BU+'execute/dbquery/mongodb'
     }, function(err,res,body){
       assert(res.statusCode === 400);
-      assert.equal(body._,'Value of parameter `query` was not valid.');
+      assert.equal(body.message,'Value of parameter `query` was not valid.');
       cb();
     });
   },
@@ -118,10 +118,10 @@ async.parallel([
     }, function(err,res,body){
       if(DBS.indexOf('mongodb') !== -1){
         assert(res.statusCode === 200);
-        assert.equal(body._,null);
+        assert.equal(body.message,null);
       } else {
         assert(res.statusCode === 400);
-        assert(body._.indexOf('error connecting') !== -1);
+        assert(body.message.indexOf('error connecting') !== -1);
       }
       cb();
     });
@@ -133,10 +133,10 @@ async.parallel([
     }, function(err,res,body){
       if(DBS.indexOf('mongodb') !== -1){
         assert(res.statusCode === 200);
-        assert.equal(body._,null);
+        assert.equal(body.message,null);
       } else {
         assert(res.statusCode === 400);
-        assert(body._.indexOf('error connecting') !== -1);
+        assert(body.message.indexOf('error connecting') !== -1);
       }
       cb();
     });
@@ -147,7 +147,7 @@ async.parallel([
       json : { query : { colName : '55' }, connName : 'c093509232' }
     },function(err,res,body){
       assert(res.statusCode === 400);
-      assert.equal(body._,'Please provide a valid connection name.');
+      assert.equal(body.message,'Please provide a valid connection name.');
       cb();
     });
   },
@@ -159,10 +159,10 @@ async.parallel([
     },function(err,res,body){
       if(DBS.indexOf('mongodb') !== -1){
         assert(res.statusCode === 200);
-        assert.deepEqual(body._,{ n: 1, ok: 1 });
+        assert.deepEqual(body.message,{ n: 1, ok: 1 });
       } else {
         assert(res.statusCode === 400);
-        assert(body._.indexOf('error connecting') !== -1);
+        assert(body.message.indexOf('error connecting') !== -1);
       }
       cb();
     });
@@ -173,7 +173,7 @@ async.parallel([
       json : { query : '55' }
     }, function(err,res,body){
       assert(res.statusCode === 400);
-      assert(body._.indexOf('error connecting') !== -1);
+      assert(body.message.indexOf('error connecting') !== -1);
       cb();
     });
   },
@@ -183,7 +183,7 @@ async.parallel([
       json : { query : '55', connName : 'cewrjwerweron2' }
     },function(err,res,body){
       assert(res.statusCode === 400);
-      assert.equal(body._,'Please provide a valid connection name.');
+      assert.equal(body.message,'Please provide a valid connection name.');
       cb();
     });
   },
@@ -194,10 +194,10 @@ async.parallel([
     }, function(err,res,body){
       if(DBS.indexOf('mssql') !== -1){
         assert(res.statusCode === 200);
-        assert.deepEqual(body._,[]);
+        assert.deepEqual(body.message,[]);
       } else {
         assert(res.statusCode === 400);
-        assert(body._.indexOf('error connecting') !== -1);
+        assert(body.message.indexOf('error connecting') !== -1);
       }
       cb();
     });
@@ -208,7 +208,7 @@ async.parallel([
       json : { query : '55' }
     }, function(err,res,body){
       assert(res.statusCode === 400);
-      assert(body._.indexOf('error connecting') !== -1);
+      assert(body.message.indexOf('error connecting') !== -1);
       cb();
     });
   },
@@ -218,7 +218,7 @@ async.parallel([
       json : { query : '55', connName : 'con23r23' }
     },function(err,res,body){
       assert(res.statusCode === 400);
-      assert.equal(body._,'Please provide a valid connection name.');
+      assert.equal(body.message,'Please provide a valid connection name.');
       cb();
     });
   },
@@ -229,10 +229,10 @@ async.parallel([
     }, function(err,res,body){
       if(DBS.indexOf('postgres') !== -1){
         assert(res.statusCode === 200);
-        assert.deepEqual(body._.command,'SELECT');
+        assert.deepEqual(body.message.command,'SELECT');
       } else {
         assert(res.statusCode === 400);
-        assert(body._.indexOf('error connecting') !== -1);
+        assert(body.message.indexOf('error connecting') !== -1);
       }
       cb();
     });
@@ -243,17 +243,32 @@ async.parallel([
       json : { query : '55' }
     }, function(err,res,body){
       assert(res.statusCode === 400);
-      assert(body._.indexOf('error connecting') !== -1);
+      assert(body.message.indexOf('error connecting') !== -1);
       cb();
     });
   },
   function(cb){
     req.post({
       url : BU+'execute/dbquery/oracle',
-      json : { query : '55', connName : 'con2' }
+      json : { query : '55', connName : 'con4345342' }
     },function(err,res,body){
       assert(res.statusCode === 400);
-      assert.equal(body._,'Please provide a valid connection name.');
+      assert.equal(body.message,'Please provide a valid connection name.');
+      cb();
+    });
+  },
+  function(cb){
+    req.post({
+      url : BU+'execute/dbquery/oracle',
+      json : { query : 'select 2+2 from dual', connName : 'con2' }
+    }, function(err,res,body){
+      if(DBS.indexOf('oracle') !== -1){
+        assert(res.statusCode === 200);
+        assert.deepEqual(body,{"output":{"rows":[[4]],"metaData":[{"name":"2+2"}]}});
+      } else {
+        assert(res.statusCode === 400);
+        assert(body.message.indexOf('error connecting') !== -1);
+      }
       cb();
     });
   },
@@ -262,7 +277,7 @@ async.parallel([
       url : BU+'execute/command'
     } ,function(err,res,body){
       assert(res.statusCode === 400);
-      assert.equal(body._,'Parameter `command` was missing in request.');
+      assert.equal(body.message,'Parameter `command` was missing in request.');
       cb();
     });
   },
@@ -272,8 +287,8 @@ async.parallel([
       json : { command : 'r9803jfe' }
     } ,function(err,res,body){
       assert(res.statusCode === 400);
-      assert(body._.indexOf('not') !== -1);
-      assert(body._.indexOf('command') !== -1);
+      assert(body.error.indexOf('not') !== -1);
+      //assert(body.message.indexOf('command') !== -1);
       cb();
     });
   },
@@ -289,28 +304,28 @@ async.parallel([
   function(cb){
     req.get(BU+'convert',function(err,res,body){
       assert(res.statusCode === 404);
-      assert.equal(body._,'Invalid request route.');
+      assert.equal(body.message,'Invalid request route.');
       cb();
     });
   },
   function(cb){
     req.post(BU+'convert',function(err,res,body){
       assert(res.statusCode === 404);
-      assert.equal(body._,'Invalid request route.');
+      assert.equal(body.message,'Invalid request route.');
       cb();
     });
   },
   function(cb){
     req.get(BU+'convert/csv/json',function(err,res,body){
       assert(res.statusCode === 404);
-      assert.equal(body._,'Invalid request route.');
+      assert.equal(body.message,'Invalid request route.');
       cb();
     });
   },
   function(cb){
     req.post(BU+'convert/csv/json',function(err,res,body){
       assert(res.statusCode === 400);
-      assert.equal(body._,'Parameter `filePath` was missing in request.');
+      assert.equal(body.message,'Parameter `filePath` was missing in request.');
       cb();
     });
   },
@@ -320,14 +335,14 @@ async.parallel([
       json: { filePath : path.join(__dirname,'one.csv') }
     },function(err,res,body){
       assert(res.statusCode === 200);
-      assert.deepEqual(body,{ _: [ { a: '1', b: '2', c: '3' } ] });
+      assert.deepEqual(body,{ output: [ { a: '1', b: '2', c: '3' } ] });
       cb();
     });
   },
   function(cb){
     req.post(BU+'upload',function(err,res,body){
       assert(res.statusCode === 400);
-      assert.equal(body._,'Parameter `method` was missing in request.');
+      assert.equal(body.message,'Parameter `method` was missing in request.');
       cb();
     });
   },
@@ -337,7 +352,7 @@ async.parallel([
       json : { method : 'GET' }
     },function(err,res,body){
       assert(res.statusCode === 400);
-      assert.equal(body._,'Value of parameter `method` must be one of `[\'POST\',\'PUT\',\'DELETE\']`.');
+      assert.equal(body.message,'Value of parameter `method` must be one of `[\'POST\',\'PUT\',\'DELETE\']`.');
       cb();
     });
   },
@@ -347,7 +362,7 @@ async.parallel([
       json : { method : 'POST' }
     },function(err,res,body){
       assert(res.statusCode === 400);
-      assert.equal(body._,'Parameter `url` was missing in request.');
+      assert.equal(body.message,'Parameter `url` was missing in request.');
       cb();
     });
   },
@@ -360,7 +375,7 @@ async.parallel([
       }
     },function(err,res,body){
       assert(res.statusCode === 400);
-      assert.equal(body._,'Parameter `url` was missing in request.');
+      assert.equal(body.message,'Parameter `url` was missing in request.');
       cb();
     });
   },
@@ -373,7 +388,7 @@ async.parallel([
       }
     },function(err,res,body){
       assert(res.statusCode === 200);
-      assert(body._.indexOf('301 Moved Permanently') !== -1);
+      assert(body.output.indexOf('301 Moved Permanently') !== -1);
       cb();
     });
   },
@@ -386,7 +401,7 @@ async.parallel([
       }
     },function(err,res,body){
       assert(res.statusCode === 200);
-      assert(body._.indexOf('301 Moved Permanently') !== -1);
+      assert(body.output.indexOf('301 Moved Permanently') !== -1);
       cb();
     });
   },
@@ -447,7 +462,7 @@ async.parallel([
     },function(err,res,body){
       assert(res.statusCode === 200);
       assert.deepEqual(body,
-        { _: { _: 'Parameter `filePath` was missing in request.' }, statusCode: 400 });
+        { output: { message: 'Parameter `filePath` was missing in request.' }, statusCode: 400 });
       cb();
     });
   }
