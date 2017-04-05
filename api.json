@@ -40,7 +40,7 @@
         ":conn" : {
           "=":[
             {
-              "@" : "isConnAvailable"
+              "@" : "isConnAvailable",
               "ifFailed" : {
                 "message":"{{locale.{{loc}}.{{conErrorType}}}}",
                 "status":400
@@ -48,7 +48,7 @@
             },
             {
               "uponEvent" : "body-recieved",
-              "@" : "isValidBodyForDB"
+              "@" : "isValidBodyForDB",
               "ifFailed" : {
                 "@" : "invalidParamMsg",
                 "params": "query"
@@ -66,7 +66,7 @@
           {
             "uponEvent" : "body-recieved",
             "@":"isStr",
-            "params":"{{params.body.command}}"
+            "params":"{{params.body.command}}",
             "ifFailed" : {
               "@" : "missingParamMsg",
               "params": "command"
@@ -86,7 +86,7 @@
             {
               "uponEvent":"body-recieved",
               "@":"isStr",
-              "params":"{{params.body.filePath}}"
+              "params":"{{params.body.filePath}}",
               "ifFailed":{
                 "@" : "missingParamMsg",
                 "params": "filePath"
@@ -105,7 +105,7 @@
         {
           "uponEvent":"body-recieved",
           "@" : "isStr",
-          "params": "{{params.body.method}}"
+          "params": "{{params.body.method}}",
           "ifFailed":{
             "@" : "missingParamMsg",
             "params": "method"
@@ -125,7 +125,7 @@
         {
           "uponEvent":"body-recieved",
           "@" : "isStr",
-          "params": "{{params.body.url}}"
+          "params": "{{params.body.url}}",
           "ifFailed":{
             "@" : "missingParamMsg",
             "params": "url"
