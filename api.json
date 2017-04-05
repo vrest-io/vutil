@@ -1,0 +1,155 @@
+{
+  "_vars" : {
+    "name" : "vutil",
+    "version" : "0.0.1",
+    "deftimeout" : 5000,
+    "defKey" : "message",
+    "supportEmail" : "support@vrest.io",
+    "$locale":{
+      "en":{
+        "missingParamMsg":"Parameter `{{0}}` was missing in request.",
+        "invalidParamMsg":"Value of parameter `{{0}}` was not valid.",
+        "enumErrorMsg":"Value of parameter `{{0}}` must be one of `{{1}}`.",
+        "connnotavail":"Connection not available. Please notify for connection setup at {{supportEmail}}.",
+        "invalidconname":"Please provide a valid connection name.",
+        "queryfail" : "Error while executing query. "
+      }
+    }
+  },
+  "_root" : {
+    "$" : {
+      "name" : "{{name}}",
+      "version" : "{{version}}"
+    },
+    "+":{
+      "requestId":{
+        "@" : "getRequestId"
+      },
+      "user":{
+        "@" : "getCurrentUser"
+      },
+      "locale":{
+        "@" : "whichLocale"
+      },
+      "params":{
+        "@" : "getBodyParams"
+      }
+    },
+    "execute":{
+      "dbquery":{
+        ":conn" : {
+          "=":[
+            [
+              {
+                "@" : "isConnAvailable",
+                "#": "{{params.path.conn}}"
+              },
+              {
+                "message":"{{$locale.{{locale}}.connnotavail}}",
+                "status":400
+              }
+            ],
+            [
+              "body-recieved",
+              {
+                "@" : "isValidBodyForDB"
+              },
+              {
+                "@" : "invalidParamMsg",
+                "#": "query"
+              }
+            ]
+          ],
+          "c$":{
+            "!" : "body-recieved",
+            "@":"{{params.path.conn}}"
+          }
+        }
+      },
+      "command":{
+        "=":[
+          [
+            "body-recieved",
+            {
+              "@":"isStr",
+              "#":"{{params.body.command}}"
+            },
+            {
+              "@" : "missingParamMsg",
+              "#": "command"
+            }
+          ]
+        ],
+        "c$":{
+          "!" : "body-recieved",
+          "@":"cmd",
+          "#": "{{params.body.command}}"
+        }
+      }
+    },
+    "convert":{
+      "csv":{
+        "json":{
+          "=":[
+            [
+              "body-recieved",
+              {
+                "@":"isStr",
+                "#":"{{params.body.filePath}}"
+              },
+              {
+                "@" : "missingParamMsg",
+                "#": "filePath"
+              }
+            ]
+          ],
+          "c$":{
+            "!" : "body-recieved",
+            "@":"csvtojson"
+          }
+        }
+      }
+    },
+    "upload":{
+      "=":[
+        [
+          "body-recieved",
+          {
+            "@" : "isStr",
+            "#": "{{params.body.method}}"
+          },
+          {
+            "@" : "missingParamMsg",
+            "#": "method"
+          }
+        ],
+        [
+          "body-recieved",
+           "['POST','PUT','DELETE'].indexOf('{{params.body.method}}') !== -1",
+          {
+            "@" : "enumErrorMsg",
+            "#": [
+              "method",
+              "['POST','PUT','DELETE']"
+            ]
+          }
+        ],
+        [
+          "body-recieved",
+          {
+            "@" : "isStr",
+            "#": "{{params.body.url}}"
+          },
+          {
+            "@" : "missingParamMsg",
+            "#": "url"
+          }
+        ]
+      ],
+      "c$":{
+        "!" : "body-recieved",
+        "@" : "fireUpload"
+      }
+    }
+  }
+}

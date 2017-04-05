@@ -1,0 +1,180 @@
+# this is an example of the Uber API
+# as a demonstration of an API spec in YAML
+swagger: '2.0'
+info:
+  title: vREST Utlity APIs
+  description: |
+    Welcome to vREST Utility API reference. This utility will help you solve the following issues:
+    1. Execute a system command via REST API for setup and tear down operations
+    2. Execute DB CRUD operations via REST API for Database Validation
+    3. Convert CSV to JSON via REST API and is useful in data driven testing
+    4. Uploads file via REST API which was missing in vREST itself.
+
+    All file paths must be relative to configured data directory. Data Directory can be anywhere on your system. You may version control this data directory at your own choice. Examples of file paths are as follows:
+    1. $dataDir/csvs/create-contact.csv
+    2. $dataDir/files/sample-file.png
+  version: "1.0.0"
+# the domain of the service
+host: yourdomain.com
+# array of all schemes that your API supports
+schemes:
+  - http
+  - https
+# will be prefixed to all paths
+basePath: /v1
+produces:
+  - application/json
+paths:
+  /execute/command:
+    post:
+      summary: Executes a system command
+      description: |
+        This API will execute the system command specified and returns command response.
+      parameters:
+        - name: command
+          type: string
+          in: formData
+          description: System command to be executed
+          required: true
+      responses:
+        200:
+          description: Command Response
+          schema:
+            $ref: '#/definitions/CommandResponse'
+        408:
+          description: Timeout Response. If the command takes time to execute, then this response will be returned after the configured timeout period.
+          schema:
+            $ref: '#/definitions/TimeoutResponse'
+        400:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /execute/dbquery/{conn}:
+    post:
+      summary: Executes a database query
+      description: This API will execute the database query specified and returns the results as JSON.
+      parameters:
+        - name: conn
+          in: path
+          description: Connection name
+          required: true
+          type: string
+        - name: dbquery
+          type: string
+          in: formData
+          description: DB query which is going to be executed
+          required: true
+      responses:
+        200:
+          description: Database Query Result
+          schema:
+            $ref: '#/definitions/DbResult'
+        408:
+          description: Timeout Response. If the command takes time to execute, then this response will be returned after the configured timeout period.
+          schema:
+            $ref: '#/definitions/TimeoutResponse'
+        400:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /convert/csv/json:
+    post:
+      summary: Converts csv file to JSON
+      description: This API converts the specified csv file into JSON format.
+      parameters:
+        - name: filePath
+          in: formData
+          description: CSV File path to be converted
+          required: true
+          type: string
+      responses:
+        200:
+          description: Converted JSON file
+          schema:
+            type : object
+            properties:
+              output:
+                type: array
+                items:
+                  type: object
+        400:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /upload:
+    post:
+      summary: Uploads a file
+      description: This API will execute a multipart request as specified by the data.
+      parameters:
+        - name: body
+          in: body
+          description: Upload API request details
+          required: true
+          schema:
+            $ref: '#/definitions/UploadRequest'
+      responses:
+        400:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Upload API response
+          schema:
+            $ref: '#/definitions/UploadResponse'
+definitions:
+  DbResult:
+    type: object
+    properties:
+      output:
+        type: object
+        description: Database Query Result
+  TimeoutResponse:
+    type: object
+    properties:
+      message:
+        type: string
+        description: Timeout error message.
+      pid:
+        type: number
+        description: Process Id
+  CommandResponse:
+    type: object
+    properties:
+      pid:
+        type: number
+        description: Process id which is executed
+      output:
+        type: string
+        description: Command output
+  UploadRequest:
+    type: object
+    properties:
+      method:
+        type: string
+        description: Request Method to be executed.
+      url:
+        type: string
+        description: Upload API request URL. including the querystring.
+      headers:
+        type: object
+        description: Request header key-value pairs, where key is header name and value is header value. if the request header "Content-Type" is specified then that header will be used otherwise header value "multipart/form-data" will be used.
+      body:
+        type: object
+        description: Request formData key-value pairs, where key is the parameter name and value is parameter value.
+  UploadResponse:
+    type: object
+    properties:
+      error:
+        type: string
+        description: present if any error found while executing the request.
+      statusCode:
+        type: number
+        description: statusCode, if present in the response.
+      output:
+        type: object
+        description: can be parsed json response or string.
+  Error:
+    type: object
+    properties:
+      message:
+        type: string
