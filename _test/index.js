@@ -40,7 +40,7 @@ async.parallel([
   },
   function(cb){
     req.post({
-      url : BU+'execute/dbquery/mysql'
+      url : BU+'execute/dbquery/mqcon1'
     }, function(err,res,body){
       assert(res.statusCode === 400);
       assert.equal(body.message,'Value of parameter `query` was not valid.');
@@ -52,7 +52,7 @@ async.parallel([
       url : BU+'execute/dbquery/mong'
     }, function(err,res,body){
       assert(res.statusCode === 400);
-      assert.equal(body.message,'Connection not available. Please notify for connection setup at support@vrest.io.');
+      assert.equal(body.message,'Please provide a valid connection name.');
       cb();
     });
   },
@@ -68,8 +68,8 @@ async.parallel([
   },
   function(cb){
     req.post({
-      url : BU+'execute/dbquery/mysql',
-      json : { query : '55', connName : '09u309u23' }
+      url : BU+'execute/dbquery/09u309u23',
+      json : { query : '55' }
     },function(err,res,body){
       assert(res.statusCode === 400);
       assert.equal(body.message,'Please provide a valid connection name.');
@@ -78,8 +78,8 @@ async.parallel([
   },
   function(cb){
     req.post({
-      url : BU+'execute/dbquery/mysql',
-      json : { query : '55', connName : 'con1' }
+      url : BU+'execute/dbquery/mqcon1',
+      json : { query : '55' }
     }, function(err,res,body){
       assert(res.statusCode === 400);
       assert(body.message.indexOf('error connecting') !== -1);
@@ -88,8 +88,8 @@ async.parallel([
   },
   function(cb){
     req.post({
-      url : BU+'execute/dbquery/mysql',
-      json : { query : 'SHOW TABLES;', connName : 'con2' }
+      url : BU+'execute/dbquery/mqcon2',
+      json : { query : 'SHOW TABLES;' }
     }, function(err,res,body){
       if(DBS.indexOf('mysql') !== -1){
         assert(res.statusCode === 200);
@@ -104,7 +104,7 @@ async.parallel([
   },
   function(cb){
     req.post({
-      url : BU+'execute/dbquery/mongodb'
+      url : BU+'execute/dbquery/mgcon1'
     }, function(err,res,body){
       assert(res.statusCode === 400);
       assert.equal(body.message,'Value of parameter `query` was not valid.');
@@ -113,7 +113,7 @@ async.parallel([
   },
   function(cb){
     req.post({
-      url : BU+'execute/dbquery/mongodb',
+      url : BU+'execute/dbquery/mgcon2',
       json : { query : '55' }
     }, function(err,res,body){
       if(DBS.indexOf('mongodb') !== -1){
@@ -128,7 +128,7 @@ async.parallel([
   },
   function(cb){
     req.post({
-      url : BU+'execute/dbquery/mongodb',
+      url : BU+'execute/dbquery/mgcon2',
       json : { query :  { colName : '55' } }
     }, function(err,res,body){
       if(DBS.indexOf('mongodb') !== -1){
@@ -143,8 +143,8 @@ async.parallel([
   },
   function(cb){
     req.post({
-      url : BU+'execute/dbquery/mongodb',
-      json : { query : { colName : '55' }, connName : 'c093509232' }
+      url : BU+'execute/dbquery/c093509232',
+      json : { query : { colName : '55' } }
     },function(err,res,body){
       assert(res.statusCode === 400);
       assert.equal(body.message,'Please provide a valid connection name.');
@@ -153,9 +153,8 @@ async.parallel([
   },
   function(cb){
     req.post({
-      url : BU+'execute/dbquery/mongodb',
-      json : { query : { colName : 'role',command : 'insertOne',operate : { name : 'role4',displayName : 'byby' } },
-        connName : 'con2' }
+      url : BU+'execute/dbquery/mgcon2',
+      json : { query : { colName : 'role',command : 'insertOne',operate : { name : 'role4',displayName : 'byby' } } }
     },function(err,res,body){
       if(DBS.indexOf('mongodb') !== -1){
         assert(res.statusCode === 200);
@@ -169,7 +168,7 @@ async.parallel([
   },
   function(cb){
     req.post({
-      url : BU+'execute/dbquery/mssql',
+      url : BU+'execute/dbquery/mscon1',
       json : { query : '55' }
     }, function(err,res,body){
       assert(res.statusCode === 400);
@@ -179,8 +178,8 @@ async.parallel([
   },
   function(cb){
     req.post({
-      url : BU+'execute/dbquery/mssql',
-      json : { query : '55', connName : 'cewrjwerweron2' }
+      url : BU+'execute/dbquery/cewrjwerweron2',
+      json : { query : '55' }
     },function(err,res,body){
       assert(res.statusCode === 400);
       assert.equal(body.message,'Please provide a valid connection name.');
@@ -189,8 +188,8 @@ async.parallel([
   },
   function(cb){
     req.post({
-      url : BU+'execute/dbquery/mssql',
-      json : { query : 'select * from dbo.category;', connName : 'con2' }
+      url : BU+'execute/dbquery/mscon2',
+      json : { query : 'select * from dbo.category;' }
     }, function(err,res,body){
       if(DBS.indexOf('mssql') !== -1){
         assert(res.statusCode === 200);
@@ -204,7 +203,7 @@ async.parallel([
   },
   function(cb){
     req.post({
-      url : BU+'execute/dbquery/postgres',
+      url : BU+'execute/dbquery/pscon1',
       json : { query : '55' }
     }, function(err,res,body){
       assert(res.statusCode === 400);
@@ -214,8 +213,8 @@ async.parallel([
   },
   function(cb){
     req.post({
-      url : BU+'execute/dbquery/postgres',
-      json : { query : '55', connName : 'con23r23' }
+      url : BU+'execute/dbquery/con23r23',
+      json : { query : '55' }
     },function(err,res,body){
       assert(res.statusCode === 400);
       assert.equal(body.message,'Please provide a valid connection name.');
@@ -224,8 +223,8 @@ async.parallel([
   },
   function(cb){
     req.post({
-      url : BU+'execute/dbquery/postgres',
-      json : { query : 'select * from avatar;', connName : 'con2' }
+      url : BU+'execute/dbquery/pscon2',
+      json : { query : 'select * from avatar;' }
     }, function(err,res,body){
       if(DBS.indexOf('postgres') !== -1){
         assert(res.statusCode === 200);
@@ -239,7 +238,7 @@ async.parallel([
   },
   function(cb){
     req.post({
-      url : BU+'execute/dbquery/oracle',
+      url : BU+'execute/dbquery/occon1',
       json : { query : '55' }
     }, function(err,res,body){
       assert(res.statusCode === 400);
@@ -249,8 +248,8 @@ async.parallel([
   },
   function(cb){
     req.post({
-      url : BU+'execute/dbquery/oracle',
-      json : { query : '55', connName : 'con4345342' }
+      url : BU+'execute/dbquery/con4345342',
+      json : { query : '55' }
     },function(err,res,body){
       assert(res.statusCode === 400);
       assert.equal(body.message,'Please provide a valid connection name.');
@@ -259,8 +258,8 @@ async.parallel([
   },
   function(cb){
     req.post({
-      url : BU+'execute/dbquery/oracle',
-      json : { query : 'select 2+2 from dual', connName : 'con2' }
+      url : BU+'execute/dbquery/occon2',
+      json : { query : 'select 2+2 from dual' }
     }, function(err,res,body){
       if(DBS.indexOf('oracle') !== -1){
         assert(res.statusCode === 200);

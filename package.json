@@ -13,7 +13,7 @@
     "mysql": "^2.13.0",
     "oracledb": "^1.13.0",
     "pg": "^6.1.5",
-    "json2server": "^0.0.5",
+    "json2server": "^0.0.6",
     "request": "^2.81.0"
   },
   "devDependencies": {

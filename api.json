@@ -5,12 +5,12 @@
     "deftimeout" : 5000,
     "defKey" : "message",
     "supportEmail" : "support@vrest.io",
-    "$locale":{
+    "locale":{
       "en":{
         "missingParamMsg":"Parameter `{{0}}` was missing in request.",
         "invalidParamMsg":"Value of parameter `{{0}}` was not valid.",
         "enumErrorMsg":"Value of parameter `{{0}}` must be one of `{{1}}`.",
-        "connnotavail":"Connection not available. Please notify for connection setup at {{supportEmail}}.",
+        "connnotavail":"Connection setup not available. Please notify for connection setup at {{supportEmail}}.",
         "invalidconname":"Please provide a valid connection name.",
         "queryfail" : "Error while executing query. "
       }
@@ -22,14 +22,9 @@
       "version" : "{{version}}"
     },
     "+":{
+      "currentLocale" : "en",
       "requestId":{
         "@" : "getRequestId"
-      },
-      "user":{
-        "@" : "getCurrentUser"
-      },
-      "locale":{
-        "@" : "whichLocale"
       },
       "params":{
         "@" : "getBodyParams"
@@ -39,51 +34,43 @@
       "dbquery":{
         ":conn" : {
           "=":[
-            [
-              {
-                "@" : "isConnAvailable",
-                "#": "{{params.path.conn}}"
-              },
-              {
-                "message":"{{$locale.{{locale}}.connnotavail}}",
+            {
+              "@" : "isConnAvailable",
+              "ifFailed" : {
+                "message":"{{locale.{{currentLocale}}.{{conErrorType}}}}",
                 "status":400
               }
-            ],
-            [
-              "body-recieved",
-              {
-                "@" : "isValidBodyForDB"
-              },
-              {
+            },
+            {
+              "uponEvent" : "body-recieved",
+              "@" : "isValidBodyForDB",
+              "ifFailed" : {
                 "@" : "invalidParamMsg",
-                "#": "query"
+                "params": "query"
               }
-            ]
+            }
           ],
-          "c$":{
-            "!" : "body-recieved",
-            "@":"{{params.path.conn}}"
+          "$post":{
+            "uponEvent" : "body-recieved",
+            "@":"{{connType}}"
           }
         }
       },
       "command":{
         "=":[
-          [
-            "body-recieved",
-            {
-              "@":"isStr",
-              "#":"{{params.body.command}}"
-            },
-            {
+          {
+            "uponEvent" : "body-recieved",
+            "@":"isStr",
+            "params":"{{params.body.command}}",
+            "ifFailed" : {
               "@" : "missingParamMsg",
-              "#": "command"
+              "params": "command"
             }
-          ]
+          }
         ],
-        "c$":{
-          "!" : "body-recieved",
-          "@":"cmd",
-          "#": "{{params.body.command}}"
+        "$post":{
+          "uponEvent" : "body-recieved",
+          "@":"cmd"
         }
       }
     },
@@ -91,20 +78,18 @@
       "csv":{
         "json":{
           "=":[
-            [
-              "body-recieved",
-              {
-                "@":"isStr",
-                "#":"{{params.body.filePath}}"
-              },
-              {
+            {
+              "uponEvent":"body-recieved",
+              "@":"isStr",
+              "params":"{{params.body.filePath}}",
+              "ifFailed":{
                 "@" : "missingParamMsg",
-                "#": "filePath"
+                "params": "filePath"
               }
-            ]
+            }
           ],
-          "c$":{
-            "!" : "body-recieved",
+          "$post":{
+            "uponEvent" : "body-recieved",
             "@":"csvtojson"
           }
         }
@@ -112,42 +97,38 @@
     },
     "upload":{
       "=":[
-        [
-          "body-recieved",
-          {
-            "@" : "isStr",
-            "#": "{{params.body.method}}"
-          },
-          {
+        {
+          "uponEvent":"body-recieved",
+          "@" : "isStr",
+          "params": "{{params.body.method}}",
+          "ifFailed":{
             "@" : "missingParamMsg",
-            "#": "method"
+            "params": "method"
           }
-        ],
-        [
-          "body-recieved",
-           "['POST','PUT','DELETE'].indexOf('{{params.body.method}}') !== -1",
-          {
+        },
+        {
+          "uponEvent":"body-recieved",
+          "eval":"['POST','PUT','DELETE'].indexOf('{{params.body.method}}') !== -1",
+          "ifFailed":{
             "@" : "enumErrorMsg",
-            "#": [
+            "params": [
               "method",
               "['POST','PUT','DELETE']"
             ]
           }
-        ],
-        [
-          "body-recieved",
-          {
-            "@" : "isStr",
-            "#": "{{params.body.url}}"
-          },
-          {
+        },
+        {
+          "uponEvent":"body-recieved",
+          "@" : "isStr",
+          "params": "{{params.body.url}}",
+          "ifFailed":{
             "@" : "missingParamMsg",
-            "#": "url"
+            "params": "url"
           }
-        ]
+        }
       ],
-      "c$":{
-        "!" : "body-recieved",
+      "$post":{
+        "uponEvent" : "body-recieved",
         "@" : "fireUpload"
       }
     }

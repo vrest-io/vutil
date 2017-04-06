@@ -1,7 +1,7 @@
-function func(vars,methods,req,res,next){
+function func(vars,methods,req,res){
   var query = GLOBAL_METHODS.lastValue(vars.params, 'body','query');
   if(!query) return false;
-  switch(GLOBAL_METHODS.lastValue(vars,'params','path','conn')){
+  switch(GLOBAL_METHODS.lastValue(vars,'connType')){
     case 'mysql' :
     case 'mssql' :
     case 'postgres' :

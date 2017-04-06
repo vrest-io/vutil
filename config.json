@@ -9,13 +9,13 @@
   "db" : {
     "connections" : [
       {
-        "name" : "con1",
+        "name" : "mqcon1",
         "type" : "mysql",
         "config" : {
         }
       },
       {
-        "name" : "con2",
+        "name" : "mqcon2",
         "type" : "mysql",
         "config" : {
             "host"     : "localhost",
@@ -25,26 +25,26 @@
         }
       },
       {
-        "name" : "con1",
+        "name" : "mgcon1",
         "type" : "mongodb",
         "config" : {
         }
       },
       {
-        "name" : "con2",
+        "name" : "mgcon2",
         "type" : "mongodb",
         "config" : {
             "url": "mongodb://localhost/vrest"
         }
       },
       {
-        "name" : "con1",
+        "name" : "mscon1",
         "type" : "mssql",
         "config" : {
         }
       },
       {
-        "name" : "con2",
+        "name" : "mscon2",
         "type" : "mssql",
         "config" : {
             "server"     : "localhost",
@@ -54,13 +54,13 @@
         }
       },
       {
-        "name" : "con1",
+        "name" : "pscon1",
         "type" : "postgres",
         "config" : {
         }
       },
       {
-        "name" : "con2",
+        "name" : "pscon2",
         "type" : "postgres",
         "config" : {
             "host"     : "localhost",
@@ -70,13 +70,13 @@
         }
       },
       {
-        "name" : "con1",
+        "name" : "occon1",
         "type" : "oracle",
         "config" : {
         }
       },
       {
-        "name" : "con2",
+        "name" : "occon2",
         "type" : "oracle",
         "config" : {
             "connectString": "localhost/orcl",
