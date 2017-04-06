@@ -9,12 +9,12 @@ function func(vars,methods,req,res,next){
   }, function(ert,con){
     var query = GLOBAL_METHODS.lastValue(vars.params, 'body','query');
     if(ert) {
-      next({ message : (vars.locale[vars.loc][ert] || ert), status : 400 });
+      next({ message : (vars.locale[vars.currentLocale][ert] || ert), status : 400 });
     } else {
       var request = new mssql.Request(con);
       request.query(query, function(err, recordset) {
         if(err) {
-          next({ message : (vars.locale[vars.loc].queryfail+(err.message || '')), status : 400 });
+          next({ message : (vars.locale[vars.currentLocale].queryfail+(err.message || '')), status : 400 });
         } else {
           next({ output : recordset, status : 200 });
         }

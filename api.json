@@ -10,7 +10,7 @@
         "missingParamMsg":"Parameter `{{0}}` was missing in request.",
         "invalidParamMsg":"Value of parameter `{{0}}` was not valid.",
         "enumErrorMsg":"Value of parameter `{{0}}` must be one of `{{1}}`.",
-        "connnotavail":"Connection not available. Please notify for connection setup at {{supportEmail}}.",
+        "connnotavail":"Connection setup not available. Please notify for connection setup at {{supportEmail}}.",
         "invalidconname":"Please provide a valid connection name.",
         "queryfail" : "Error while executing query. "
       }
@@ -22,14 +22,9 @@
       "version" : "{{version}}"
     },
     "+":{
+      "currentLocale" : "en",
       "requestId":{
         "@" : "getRequestId"
-      },
-      "user":{
-        "@" : "getCurrentUser"
-      },
-      "loc":{
-        "@" : "whichLocale"
       },
       "params":{
         "@" : "getBodyParams"
@@ -42,7 +37,7 @@
             {
               "@" : "isConnAvailable",
               "ifFailed" : {
-                "message":"{{locale.{{loc}}.{{conErrorType}}}}",
+                "message":"{{locale.{{currentLocale}}.{{conErrorType}}}}",
                 "status":400
               }
             },

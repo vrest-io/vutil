@@ -5,11 +5,15 @@ function func(vars,methods,req,res,next){
   methods.predb(vars,methods,req,res, function(cn,cb){
     var hn = GLOBAL_METHODS.assign(false,conf);
     hn = GLOBAL_METHODS.assign(hn,cn);
-    client.connect(hn.url, hn.options, cb);
+    try {
+      client.connect(hn.url, hn.options, cb);
+    } catch(erm){
+      cb(erm.message);
+    }
   }, function(ert,con){
     var query = GLOBAL_METHODS.lastValue(vars.params, 'body','query');
     if(ert) {
-      next({ message : (vars.locale[vars.loc][ert] || ert), status : 400 });
+      next({ message : (vars.locale[vars.currentLocale][ert] || ert), status : 400 });
     } else {
       var col;
       try { col = con.collection(query && query.colName); } catch(erm){}
@@ -21,7 +25,7 @@ function func(vars,methods,req,res,next){
       }
       col[query.command](query.operate, query.options, function(er,rs){
         if(er) {
-          next({ message : (vars.locale[vars.loc].queryfail+(er.message || '')), status : 400 });
+          next({ message : (vars.locale[vars.currentLocale].queryfail+(er.message || '')), status : 400 });
         } else {
           next({ output : rs, status : 200 });
         }

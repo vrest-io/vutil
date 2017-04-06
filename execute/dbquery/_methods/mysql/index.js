@@ -10,11 +10,11 @@ function func(vars,methods,req,res,next){
   }, function(ert,con){
     var query = GLOBAL_METHODS.lastValue(vars.params, 'body','query');
     if(ert) {
-      next({ message : (vars.locale[vars.loc][ert] || ert), status : 400 });
+      next({ message : (vars.locale[vars.currentLocale][ert] || ert), status : 400 });
     } else {
       con.query(query,function(err,results){
         if(err) {
-          next({ message : (vars.locale[vars.loc].queryfail+(err.message || '')), status : 400 });
+          next({ message : (vars.locale[vars.currentLocale].queryfail+(err.message || '')), status : 400 });
         } else {
           next({ output : results, status : 200 });
         }
