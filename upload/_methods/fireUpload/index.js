@@ -1,5 +1,10 @@
 
-const fs = require('fs'), request = require('request').defaults({ json : true });
+const fs = require('fs'), path = require('path'),
+      request = require('request').defaults({ json : true });
+
+if(!GLOBAL_APP_CONFIG.dataPath) {
+  GLOBAL_APP_CONFIG.dataPath = process.cwd();
+}
 
 function func(vars,methods,req,res,next){
   var formData = {}, bd = vars.params.body.body;
@@ -13,14 +18,27 @@ function func(vars,methods,req,res,next){
     if(GLOBAL_METHODS.isAlphaNum(vars.params.body.fileKey)){
       fl = vars.params.body.fileKey;
     }
-    formData[fl] = fs.createReadStream(vars.params.body.filePath);
+    formData[fl] =
+      fs.createReadStream(path.join(GLOBAL_APP_CONFIG.dataPath,vars.params.body.filePath));
   }
-  request({
+  var toSend = {
     method : vars.params.body.method,
     url: vars.params.body.url,
     headers : vars.params.body.headers,
     formData: formData
-  },function(err,res,body){
+  };
+  if(Array.isArray(vars.params.body.multipart)){
+    var bds = vars.params.body.multipart, ln = bds.length;
+    for(var z=0;z<ln;z++){
+      if(bds[z].body && typeof bds[z].body === 'object'
+          && GLOBAL_METHODS._isStr(bds[z].body.filePath)){
+            bds[z].body =
+              fs.createReadStream(path.join(GLOBAL_APP_CONFIG.dataPath,bds[z].body.filePath));
+      }
+    }
+    toSend.multipart = bds;
+  }
+  request(toSend,function(err,res,body){
     var rs = {};
     if(err) {
       rs.error = err;

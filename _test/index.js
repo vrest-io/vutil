@@ -340,10 +340,15 @@ async.parallel([
   function(cb){
     req.post({
       url:BU+'convert/csv/json',
-      json: { filePath : path.join(__dirname,'one.csv') }
+      json: { filePath : '_test/a.csv' }
     },function(err,res,body){
       assert(res.statusCode === 200);
-      assert.deepEqual(body,{ output: [ { a: '1', b: '2', c: '3' } ] });
+      assert.deepEqual(JSON.parse(body.output[0][0]), {"_id": "{{contactId}}","name": "","email": "john.doe@example.com","designation": "Chief Technical Officer","organization": "Example.com","country": "India","aboutMe": "My name can be used as a placeholder name and I don't have any identity.","twitterId": "fake.john.doe","facebookId": "fake.john.doe","githubId": "fake.john.doe","createdOn": "2014-05-03T06:28:45.479Z"});
+      assert.deepEqual(JSON.parse(body.output[0][1]),{"errors": { "name": "required field"}});
+      assert.deepEqual(body.output[0][2],400);
+      assert.deepEqual(JSON.parse(body.output[1][0]), {"_id": "{{contactId}}","name": "Sample Name whose length is greater than the limit","email": "john.doe@example.com","designation": "Chief Technical Officer","organization": "Example.com","country": "India","aboutMe": "My name can be used as a placeholder name and I don't have any identity.","twitterId": "fake.john.doe","facebookId": "fake.john.doe","githubId": "fake.john.doe","createdOn": "2014-05-03T06:28:45.479Z"});
+      assert.deepEqual(JSON.parse(body.output[1][1]),{"errors": { "name": "field length cannot be greater than 35"}});
+      assert.deepEqual(body.output[1][2],400);
       cb();
     });
   },
