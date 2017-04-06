@@ -1,10 +1,22 @@
 {
-  "dataPath" : "your/directory/where/files/to/upload/or/csvfiles/exists",
   "execute" : {
     "dbquery" : {
+      "conn":{
+        "enable":true
+      }
     },
     "command" : {
-      "enable" : false
+      "enable" : true
+    },
+    "convert":{
+      "csv":{
+        "json":{
+          "enable":true
+        }
+      }
+    },
+    "upload":{
+      "enable":true
     }
   },
   "db" : {

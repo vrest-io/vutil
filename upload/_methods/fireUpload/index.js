@@ -2,10 +2,6 @@
 const fs = require('fs'), path = require('path'),
       request = require('request').defaults({ json : true });
 
-if(!GLOBAL_APP_CONFIG.dataPath) {
-  GLOBAL_APP_CONFIG.dataPath = process.cwd();
-}
-
 function func(vars,methods,req,res,next){
   var formData = {}, bd = vars.params.body.body;
   if(typeof bd === 'object' && bd){
@@ -19,7 +15,7 @@ function func(vars,methods,req,res,next){
       fl = vars.params.body.fileKey;
     }
     formData[fl] =
-      fs.createReadStream(path.join(GLOBAL_APP_CONFIG.dataPath,vars.params.body.filePath));
+      fs.createReadStream(vars.params.body.filePath);
   }
   var toSend = {
     method : vars.params.body.method,
@@ -33,7 +29,7 @@ function func(vars,methods,req,res,next){
       if(bds[z].body && typeof bds[z].body === 'object'
           && GLOBAL_METHODS._isStr(bds[z].body.filePath)){
             bds[z].body =
-              fs.createReadStream(path.join(GLOBAL_APP_CONFIG.dataPath,bds[z].body.filePath));
+              fs.createReadStream(bds[z].body.filePath);
       }
     }
     toSend.multipart = bds;
