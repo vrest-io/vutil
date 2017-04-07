@@ -95,7 +95,7 @@
         }
       }
     },
-    "upload":{
+    "request":{
       "=":[
         {
           "uponEvent":"body-recieved",
@@ -104,17 +104,6 @@
           "ifFailed":{
             "@" : "missingParamMsg",
             "params": "method"
-          }
-        },
-        {
-          "uponEvent":"body-recieved",
-          "eval":"['POST','PUT','DELETE'].indexOf('{{params.body.method}}') !== -1",
-          "ifFailed":{
-            "@" : "enumErrorMsg",
-            "params": [
-              "method",
-              "['POST','PUT','DELETE']"
-            ]
           }
         },
         {
@@ -129,7 +118,7 @@
       ],
       "$post":{
         "uponEvent" : "body-recieved",
-        "@" : "fireUpload"
+        "@" : "fireRequest"
       }
     }
   }
