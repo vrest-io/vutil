@@ -2,6 +2,54 @@
 const fs = require('fs'), path = require('path'),
       request = require('request').defaults({ json : true });
 
+var CombinedStream = require('combined-stream'), uuid = require('uuid')
+require(process.cwd()+'/node_modules/request/lib/multipart').Multipart.prototype.build =
+function (parts, chunked) {
+  var self = this
+  var body = chunked ? new CombinedStream() : []
+
+  function add (part) {
+    if (typeof part === 'number') {
+      part = part.toString()
+    // change part starts
+    } else if(typeof part === 'object' && part) {
+      if(Array.isArray(part)){
+        var prvB = self.boundary;
+        self.boundary = uuid();
+        part = self.build(part,chunked);
+        self.boundary = prvB;
+      } else if(part.filePath){
+        part = getFile(part,true);
+      }
+    }
+    // change part ends
+    return chunked ? body.append(part) : body.push(Buffer.from(part))
+  }
+
+  if (self.request.preambleCRLF) {
+    add('\r\n')
+  }
+
+  parts.forEach(function (part) {
+    var preamble = '--' + self.boundary + '\r\n'
+    Object.keys(part).forEach(function (key) {
+      if (key === 'body') { return }
+      preamble += key + ': ' + part[key] + '\r\n'
+    })
+    preamble += '\r\n'
+    add(preamble)
+    add(part.body)
+    add('\r\n')
+  })
+  add('--' + self.boundary + '--')
+
+  if (self.request.postambleCRLF) {
+    add('\r\n')
+  }
+
+  return body
+}
+
 const encoders = function(ab){
   try {
     return require(ab).encode();
@@ -13,16 +61,20 @@ const encoders = function(ab){
 const getFile = function(ab,nostr){
   if(typeof ab === 'string'){
     return nostr ? ab : fs.createReadStream(ab);
-  } else if(typeof ab === 'object' && ab && typeof ab.filePath === 'string'){
-    var enc = ab.encode;
-    var ret = fs.createReadStream(ab.filePath);
-    if(typeof enc === 'string'){
-      var enc = encoders(enc);
-      if(enc){
-        ret.pipe(enc);
+  } else if(typeof ab === 'object' && ab){
+    if(Array.isArray(ab)){
+      return ab;
+    } else if(typeof ab.filePath === 'string'){
+      var enc = ab.encode;
+      var ret = fs.createReadStream(ab.filePath);
+      if(typeof enc === 'string'){
+        var enc = encoders(enc);
+        if(enc){
+          ret.pipe(enc);
+        }
       }
+      return ret;
     }
-    return ret;
   } else {
     return false;
   }
@@ -73,7 +125,7 @@ function func(vars,methods,req,res,next){
           && GLOBAL_METHODS._isStr(bds[z].body.filePath)){
         rs = getFile(bds[z].body);
         if(rs){
-          bds[z].body = getFile(bds[z].body);
+          bds[z].body = rs;
         }
       }
     }
