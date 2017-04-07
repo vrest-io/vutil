@@ -19,7 +19,7 @@ module.exports = function(finl){
         json : { method : 'GET' }
       },function(err,res,body){
         assert(res.statusCode === 400);
-        assert.equal(body.message,'Value of parameter `method` must be one of `[\'POST\',\'PUT\',\'DELETE\']`.');
+        assert.equal(body.message,'Parameter `url` was missing in request.');
         cb();
       });
     },

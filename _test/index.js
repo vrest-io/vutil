@@ -43,7 +43,7 @@ async.parallel([
   },
   function(cb){
     if(MDS.indexOf('cnv')!==-1){
-      require('../convert/_test')(cb);
+      require('../convert/csv/json/_test')(cb);
     } else {
       cb();
     }
