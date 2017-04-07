@@ -10,9 +10,9 @@ const encoders = function(ab){
   }
 };
 
-const getFile = function(ab){
+const getFile = function(ab,nostr){
   if(typeof ab === 'string'){
-    return fs.createReadStream(ab);
+    return nostr ? ab : fs.createReadStream(ab);
   } else if(typeof ab === 'object' && ab && typeof ab.filePath === 'string'){
     var enc = ab.encode;
     var ret = fs.createReadStream(ab.filePath);
@@ -29,7 +29,7 @@ const getFile = function(ab){
 };
 
 function func(vars,methods,req,res,next){
-  var formData = {}, rs, kl, kn, bd = vars.params.body.body;
+  var formData = {}, rs, kl, kn, bd = vars.params.body.formData;
   if(typeof bd === 'object' && bd){
     for(var ky in bd){
       if(ky === 'attachments' && Array.isArray(bd[ky])){
@@ -39,7 +39,7 @@ function func(vars,methods,req,res,next){
           if(rs) { kn[z] = rs; }
         }
       } else {
-        formData[ky] = bd;
+        formData[ky] = getFile(bd,true);
       }
     }
   }

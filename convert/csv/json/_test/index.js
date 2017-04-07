@@ -37,7 +37,7 @@ module.exports = function(finl){
     function(cb){
       req.post({
         url:BU+'convert/csv/json',
-        json: { filePath : 'convert/csv/json/_test/a.csv' }
+        json: { method : 'POST', filePath : 'convert/csv/json/_test/a.csv' }
       },function(err,res,body){
         assert(res.statusCode === 200);
         assert.deepEqual(JSON.parse(body.output[0][0]), {"_id": "{{contactId}}","name": "","email": "john.doe@example.com","designation": "Chief Technical Officer","organization": "Example.com","country": "India","aboutMe": "My name can be used as a placeholder name and I don't have any identity.","twitterId": "fake.john.doe","facebookId": "fake.john.doe","githubId": "fake.john.doe","createdOn": "2014-05-03T06:28:45.479Z"});

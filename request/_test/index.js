@@ -78,8 +78,7 @@ module.exports = function(finl){
         json : {
           method : 'POST',
           url : 'http://service.com/upload',
-          filePath : 'ab',
-          body : 'a body'
+          filePath : 'ab'
         }
       },function(err,res,body){
         assert(res.statusCode === 200);
@@ -93,8 +92,7 @@ module.exports = function(finl){
         json : {
           method : 'POST',
           url : 'http://service.com/upload',
-          filePath : 'ab',
-          body : ''
+          filePath : 'ab'
         }
       },function(err,res,body){
         assert(res.statusCode === 200);
@@ -108,8 +106,7 @@ module.exports = function(finl){
         json : {
           method : 'POST',
           url : BU+'convert/csv/json',
-          filePath : 'ab',
-          body : '{"a":4}',
+          filePath : 'ab'
         }
       },function(err,res,body){
         assert(res.statusCode === 200);
@@ -122,14 +119,12 @@ module.exports = function(finl){
         url:BU+'request',
         json : {
           method : 'POST',
-          url : BU+'convert/csv/json',
-          filePath : __dirname+'/one.csv',
-          body : '{"a":4}',
+          url : 'https://localhost/co/csv/json',
+          filePath : __dirname+'/one.csv'
         }
       },function(err,res,body){
         assert(res.statusCode === 200);
-        assert.deepEqual(body,
-          { output: { message: 'Parameter `filePath` was missing in request.' }, statusCode: 400 });
+        assert.equal(body.error.code,'ECONNREFUSED');
         cb();
       });
     }
