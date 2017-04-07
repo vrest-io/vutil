@@ -59,7 +59,7 @@ paths:
           description: Connection name
           required: true
           type: string
-        - name: dbquery
+        - name: query
           type: string
           in: formData
           description: DB query which is going to be executed
@@ -101,9 +101,9 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
-  /upload:
+  /request:
     post:
-      summary: Uploads a file
+      summary: Fires a request.
       description: This API will execute a multipart request as specified by the data.
       parameters:
         - name: body
