@@ -4,9 +4,8 @@ const async = require('async'),
       assert = require('assert'),
       BU = 'http://localhost:3000/',
       DBS = process.env.DBS || '';
-
-module.exports = function(finl){
-  async.parallel([
+var test =
+  [
     function(cb){
       req.post({
         url : BU+'execute/dbquery'
@@ -248,6 +247,31 @@ module.exports = function(finl){
         }
         cb();
       });
+    },
+    function(cb){
+      req.post({
+        url : BU+'execute/dbquery/invalidmysql',
+        json : { query : '55' }
+      }, function(err,res,body){
+        assert(res.statusCode === 400);
+        assert(body.message.indexOf('error connecting') !== -1);
+        assert(body.message.indexOf('127.0.0.1') !== -1);
+        cb();
+      });
+    },
+    function(cb){
+      req.post({
+        url : BU+'execute/dbquery/mysql',
+        json : { query : '55' }
+      }, function(err,res,body){
+        assert(res.statusCode === 400);
+        assert(body.message.indexOf('error connecting') !== -1);
+        assert(body.message.indexOf('halwahost') !== -1);
+        cb();
+      });
     }
-  ],finl);
+  ];
+
+module.exports = function(finl){
+  async.series(test,finl)
 };
