@@ -1,5 +1,9 @@
 
 const fs = require('fs'), path = require('path'),
+      allowedOptions = [
+        'preambleCRLF','postambleCRLF','timeout',
+        'auth','oauth','encoding','gzip'
+      ],
       request = require('request').defaults({ json : true });
 
 var CombinedStream = require('combined-stream'), uuid = require('uuid');
@@ -149,6 +153,13 @@ function func(vars,methods,req,res,next){
     url: vars.params.body.url,
     headers : vars.params.body.headers
   };
+  if(typeof vars.params.body.options === 'object' && vars.params.body.options){
+    allowedOptions.forEach(function(op){
+      if(vars.params.body.options[op] !== undefined){
+        toSend[op] = vars.params.body.options[op];
+      }
+    });
+  }
   if(Object.keys(formData).length){
     toSend.formData = formData;
   }
