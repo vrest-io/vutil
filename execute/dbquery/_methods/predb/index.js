@@ -18,8 +18,8 @@ function getConnection(config,nm,connect,next){
   }
 }
 
-function func(vars,methods,req,res,connction,next){
-  getConnection(vars.connConfig,vars.connType,connction,next);
+function func(vars,methods,req,res,connect,next){
+  getConnection(vars.connConfig,vars.params.path.conn,connect,next);
 }
 
 module.exports = func;
