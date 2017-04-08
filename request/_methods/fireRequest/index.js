@@ -2,20 +2,56 @@
 const fs = require('fs'), path = require('path'),
       request = require('request').defaults({ json : true });
 
-var CombinedStream = require('combined-stream'), uuid = require('uuid')
-require(process.cwd()+'/node_modules/request/lib/multipart').Multipart.prototype.build =
-function (parts, chunked) {
+var CombinedStream = require('combined-stream'), uuid = require('uuid');
+
+var setHeaders = require('request/lib/multipart').Multipart.prototype.setHeaders;
+
+function handlePartHeader(part,chunked){
+  var plk = Object.keys(part), pln = plk.length;
+  var that = {
+    boundary : uuid(),
+    request : {
+      getHeader : function(ky){
+        for(var z=0;z<pln;z++){
+          if(plk[z].toLowerCase()===ky.toLowerCase()){
+            return (part[plk[z]]);
+          }
+        }
+        return false;
+      },
+      hasHeader : function(ky){
+        return Boolean(this.getHeader(ky));
+      },
+      setHeader : function(ky,vl){
+        for(var st = true, z=0;z<pln;z++){
+          if(plk[z].toLowerCase()===ky.toLowerCase()){
+            part[plk[z]] = vl;
+            st = false;
+            break;
+          }
+        }
+        if(st){
+          part[ky] = vl;
+        }
+      }
+    }
+  };
+  setHeaders.bind(that)(chunked);
+  return that.boundary;
+}
+
+require('request/lib/multipart').Multipart.prototype.build = function (parts, chunked) {
   var self = this
   var body = chunked ? new CombinedStream() : []
 
-  function add (part) {
+  function add (part,boundary) {
     if (typeof part === 'number') {
       part = part.toString()
     // change part starts
     } else if(typeof part === 'object' && part) {
       if(Array.isArray(part)){
         var prvB = self.boundary;
-        self.boundary = uuid();
+        self.boundary = boundary;
         part = self.build(part,chunked);
         self.boundary = prvB;
       } else if(part.filePath){
@@ -30,7 +66,9 @@ function (parts, chunked) {
     add('\r\n')
   }
 
+
   parts.forEach(function (part) {
+    var defaultBoundary = handlePartHeader(part,chunked);
     var preamble = '--' + self.boundary + '\r\n'
     Object.keys(part).forEach(function (key) {
       if (key === 'body') { return }
@@ -38,7 +76,7 @@ function (parts, chunked) {
     })
     preamble += '\r\n'
     add(preamble)
-    add(part.body)
+    add(part.body,defaultBoundary)
     add('\r\n')
   })
   add('--' + self.boundary + '--')
