@@ -1,6 +1,6 @@
 {
   "name": "vutil",
-  "description": "vREST Utility which provides the following functions:",
+  "description": "vREST Utility",
   "version": "0.0.1",
   "main": "index.js",
   "dependencies": {
