@@ -1,11 +1,21 @@
 
 const fs = require('fs'), path = require('path'),
+      formidable = require('formidable'),
       utils = require('../../utils'),
       allowedOptions = [
         'preambleCRLF','postambleCRLF','timeout',
         'auth','oauth','encoding','gzip'
       ],
       request = require('request').defaults({ json : true });
+
+var multipartParser = new formidable.IncomingForm();
+
+function getParsedResponse(res,next){
+  multipartParser(res,function(err, fields, files){
+    if(err) next({ error : err });
+    else next({ fields : fields, files : files });
+  });
+}
 
 var CombinedStream = require('combined-stream'), uuid = require('uuid');
 
@@ -204,7 +214,13 @@ function func(req,res,next){
         rs.output = rs.body;
       }
     }
-    res.send(rs);
+    if(utils.lastValue(req.body, 'options', 'parseResponse') === true){
+      getParsedResponse(rs,function(ab){
+        res.send({ actual : rs, multipart : ab });
+      });
+    } else {
+      res.send(rs);
+    }
   });
 }
 
