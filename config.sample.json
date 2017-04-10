@@ -1,23 +1,9 @@
 {
-  "execute" : {
-    "dbquery" : {
-      "conn":{
-        "enable":true
-      }
-    },
-    "command" : {
-      "enable" : true
-    },
-    "convert":{
-      "csv":{
-        "json":{
-          "enable":true
-        }
-      }
-    },
-    "upload":{
-      "enable":true
-    }
+  "activatedModules" : {
+    "dbquery" : true,
+    "command" : true,
+    "csv2json" : true,
+    "request" : true
   },
   "db" : {
     "connections" : [
