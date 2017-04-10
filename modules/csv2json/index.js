@@ -25,7 +25,7 @@ function func(req,res,next){
       }
       c2j.on(checkOn,(csvRow)=>{
         out.push(csvRow);
-      });
+      })
       .on('done',()=>{
         res.send({ output : out });
       });
