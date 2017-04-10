@@ -15,13 +15,20 @@ function func(req,res,next){
       res.send(400,{ message : error.message || 'FILE_NOT_FOUND' });
     } else {
       var out = [];
-      csvtojson(req.body.options).fromString(data.toString())
-        .on('csv',(csvRow)=>{
-          out.push(csvRow);
-        })
-        .on('done',()=>{
-          res.send({ output : out });
-        });
+      var checkOn, c2j = csvtojson(req.body.options).fromString(data.toString());
+      switch(req.body.options.recordType){
+        case 'object':
+          checkOn = 'json';
+          break;
+        default :
+          checkOn = 'csv';
+      }
+      c2j.on(checkOn,(csvRow)=>{
+        out.push(csvRow);
+      });
+      .on('done',()=>{
+        res.send({ output : out });
+      });
     }
   });
 }
