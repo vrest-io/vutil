@@ -5,19 +5,13 @@
   "main": "index.js",
   "dependencies": {
     "csvtojson": "^1.1.4",
-    "formidable": "^1.1.1",
-    "body": "^5.1.0",
-    "js-beautify": "^1.6.12",
     "mongodb": "^2.2.25",
     "mssql": "^3.3.0",
     "mysql": "^2.13.0",
     "oracledb": "^1.13.0",
     "pg": "^6.1.5",
-    "json2server": "^0.0.7",
+    "restify": "^4.3.0",
     "request": "^2.81.0"
-  },
-  "devDependencies": {
-    "async": "^2.1.5"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

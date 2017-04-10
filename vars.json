@@ -1,0 +1,30 @@
+{
+  "supportEmail" : "support@vrest.io",
+  "defTimeout":18000,
+  "errors" :{
+    "500" : {
+      "message" : "An unknown error has been occurred. Please contact us at support@vrest.io",
+      "status" : 500
+    },
+    "408" : {
+      "message" : "It taking huge time to evaluate request. Time out. Aborted.",
+      "status" : 408
+    },
+    "404" : {
+      "message" : "Invalid request route.",
+      "status" : 404
+    },
+    "400" : {
+      "message" : "Invalid inputs.",
+      "status" : 400
+    },
+    "disabledRoute" : {
+      "message" : "Route is not enabled.",
+      "status" : 404
+    },
+    "inval" : {
+      "message" : "Request parameter was invalid.",
+      "status" : 400
+    }
+  }
+}

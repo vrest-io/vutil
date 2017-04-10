@@ -1,0 +1,7 @@
+{
+  "messages" :{
+    "connnotavail":"Connection setup not available. Please contact us for connection setup.",
+    "invalidconname":"Please provide a valid connection name.",
+    "queryfail" : "Error while executing query. "
+  }
+}
