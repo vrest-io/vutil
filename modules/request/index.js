@@ -1,6 +1,7 @@
 
 const fs = require('fs'), path = require('path'),
-      formidable = require('formidable'),
+      querystring = require('querystring'),
+      BusBoy = require('busboy'),
       utils = require('../../utils'),
       allowedOptions = [
         'preambleCRLF','postambleCRLF','timeout',
@@ -10,8 +11,26 @@ const fs = require('fs'), path = require('path'),
 
 var multipartParser = new formidable.IncomingForm();
 
-function getParsedResponse(res,next){
-  multipartParser(res,function(err, fields, files){
+function getParsedResponse(opts,res,next){
+  var fields = {}, files = {}, busboy = new BusBoy(opts);
+  busboy.on('error', function(err) {
+    next({ error: 'Multipart request could not be processed' });
+  });
+  busboy.on('partsLimit', function() {
+    next({ error: 'limits of parts reached.' });
+  });
+  busboy.on('filesLimit', function() {
+    next({ error: 'limits of files reached.' });
+  });
+  busboy.on('fieldsLimit', function() {
+    next({ error: 'limits of fields reached');
+  });
+  busboy.on('field', function(fieldname, val, fieldT, valT) {
+    fields[fieldname] = val;
+  });
+  busboy.on('file', function(fieldname, file, filename, encoding, mimetype) {
+  });
+  multipartParser.parse(res,function(err, fields, files){
     if(err) next({ error : err });
     else next({ fields : fields, files : files });
   });
@@ -198,7 +217,7 @@ function func(req,res,next){
     }
     toSend.multipart = bds;
   }
-  request(toSend,function(err,rs,body){
+  var cbs = function(err,rs,body){
     var rs = {};
     if(err) {
       rs.error = err;
@@ -221,7 +240,8 @@ function func(req,res,next){
     } else {
       res.send(rs);
     }
-  });
+  };
+  request(toSend,cbs);
 }
 
 module.exports = func;

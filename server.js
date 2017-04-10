@@ -1,6 +1,6 @@
 const restify = require('restify');
 const pckg = require('./package.json');
-const activatedModules = require('./config.json').activatedModules;
+const activatedModules = require('./config.json').activatedModules || {};
 var server = restify.createServer({ name : pckg.name+'@'+pckg.version });
 
 var rootHandler = require('./modules/root'),
@@ -29,3 +29,5 @@ if(activatedModules.request){
 server.listen(process.env.PORT || 3000, function() {
   console.log('%s listening at %s', server.name, server.url);
 });
+
+server.on('uncaughtException', function (req, res, data, err) { console.log(err); });
