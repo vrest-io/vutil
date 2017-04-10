@@ -1,0 +1,40 @@
+{
+  "name": "vutil",
+  "description": "vREST Utility which provides the following functions:",
+  "version": "0.0.1",
+  "main": "index.js",
+  "dependencies": {
+    "csvtojson": "^1.1.4",
+    "mongodb": "^2.2.25",
+    "mssql": "^3.3.0",
+    "mysql": "^2.13.0",
+    "oracledb": "^1.13.0",
+    "pg": "^6.1.5",
+    "restify": "^4.3.0",
+    "request": "^2.81.0"
+  },
+  "devDependencies": {
+    "async": "^2.1.5"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://dheerajoptimizory@bitbucket.org/dheerajoptimizory/vutil.git"
+  },
+  "keywords": [
+    "vrest",
+    "util",
+    "api",
+    "upload",
+    "server",
+    "convert",
+    "execute",
+    "db",
+    "query"
+  ],
+  "author": "support@vrest.io",
+  "license": "ISC",
+  "homepage": "https://bitbucket.org/dheerajoptimizory/vutil#readme"
+}
