@@ -9,31 +9,49 @@ const fs = require('fs'), path = require('path'),
       ],
       request = require('request').defaults({ json : true });
 
-var multipartParser = new formidable.IncomingForm();
+function parseAFile(raw){
+  return raw;
+}
 
 function getParsedResponse(opts,res,next){
-  var fields = {}, files = {}, busboy = new BusBoy(opts);
+  var fields = {}, files = {}, errors = {}, busboy = new BusBoy(opts);
   busboy.on('error', function(err) {
-    next({ error: 'Multipart request could not be processed' });
+    errors.failed = 'Multipart request could not be processed';
   });
   busboy.on('partsLimit', function() {
-    next({ error: 'limits of parts reached.' });
+    errors.partsLimit = 'limits of parts reached.';
   });
   busboy.on('filesLimit', function() {
-    next({ error: 'limits of files reached.' });
+    errors.filesLimit = 'limits of files reached.';
   });
   busboy.on('fieldsLimit', function() {
-    next({ error: 'limits of fields reached');
+    errors.fieldsLimit = 'limits of fields reached';
   });
   busboy.on('field', function(fieldname, val, fieldT, valT) {
     fields[fieldname] = val;
   });
   busboy.on('file', function(fieldname, file, filename, encoding, mimetype) {
+    files[filename] = {
+      raw : '',
+      fieldname: fieldname,
+      filename : filename,
+      encoding : encoding,
+      mimetype : mimetype
+    };
+    file.on('limit', function() {
+      files[filename].error='File size excceeded the limit.';
+    });
+    file.on('data', function(data) {
+      files[filename].raw += data;
+    });
+    file.on('end', function(data) {
+      files[filename].parsed = parseAFile(files[filename].raw);
+    });
   });
-  multipartParser.parse(res,function(err, fields, files){
-    if(err) next({ error : err });
-    else next({ fields : fields, files : files });
+  busboy.on('finish', function() {
+    next({ files : files, fields : fields, errors : errors });
   });
+  res.pipe(busboy);
 }
 
 var CombinedStream = require('combined-stream'), uuid = require('uuid');
@@ -189,7 +207,7 @@ function func(req,res,next){
   var toSend = {
     method : req.body.method,
     url: req.body.url,
-    headers : req.body.headers
+    headers : req.body.headers || {}
   };
   if(typeof req.body.options === 'object' && req.body.options){
     allowedOptions.forEach(function(op){
@@ -218,27 +236,27 @@ function func(req,res,next){
     toSend.multipart = bds;
   }
   var cbs = function(err,rs,body){
-    var rs = {};
+    var ars = {};
     if(err) {
-      rs.error = err;
+      ars.error = err;
     }
     if(body){
-      rs.output = body;
+      ars.output = body;
     }
-    if(rs){
-      if(rs.statusCode) {
-        rs.statusCode = rs.statusCode;
+    if(ars){
+      if(ars.statusCode) {
+        ars.statusCode = ars.statusCode;
       }
-      if(!(rs.output) && rs.body){
-        rs.output = rs.body;
+      if(!(ars.output) && ars.body){
+        ars.output = ars.body;
       }
     }
     if(utils.lastValue(req.body, 'options', 'parseResponse') === true){
-      getParsedResponse(rs,function(ab){
-        res.send({ actual : rs, multipart : ab });
+      getParsedResponse({ headers : rs.headers },rs,function(ab){
+        res.send({ actual : ars, multipart : ab });
       });
     } else {
-      res.send(rs);
+      res.send(ars);
     }
   };
   request(toSend,cbs);
