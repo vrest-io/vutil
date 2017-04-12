@@ -3,7 +3,8 @@
     "dbquery" : true,
     "command" : true,
     "csv2json" : true,
-    "request" : true
+    "request" : true,
+    "read" : true
   },
   "db" : {
     "connections" : [
