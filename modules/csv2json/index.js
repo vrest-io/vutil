@@ -16,7 +16,7 @@ function func(req,res,next){
     } else {
       var out = [];
       var checkOn, c2j = csvtojson(req.body.options).fromString(data.toString());
-      switch(req.body.options.recordType){
+      switch(utils.lastValue(req.body,'options','recordType')){
         case 'object':
           checkOn = 'json';
           break;
