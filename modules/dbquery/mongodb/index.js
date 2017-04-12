@@ -42,7 +42,7 @@ function func(vars,methods,next){
         if(er) {
           next({ message : (vars.messages.queryfail+(er.message || '')), status : 400 });
         } else {
-          next({ output : rs, status : 200 });
+          next({ output : rs.toJSON(), status : 200 });
         }
       });
     }
