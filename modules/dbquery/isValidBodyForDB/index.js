@@ -27,7 +27,7 @@ function func(vars,methods){
       if(typeof query.options !== 'object' || query.options === null){
         query.options = {};
       }
-      if(query.cursorCalls !== 'object' || query.options === null){
+      if(typeof query.cursorCalls !== 'object' || query.cursorCalls === null){
         query.cursorCalls = false;
       }
       if(!(Array.isArray(query.cursorCalls))){
