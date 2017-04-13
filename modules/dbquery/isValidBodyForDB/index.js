@@ -27,6 +27,14 @@ function func(vars,methods){
       if(typeof query.options !== 'object' || query.options === null){
         query.options = {};
       }
+      if(query.cursorCalls !== 'object' || query.options === null){
+        query.cursorCalls = false;
+      }
+      if(!(Array.isArray(query.cursorCalls))){
+        var opt = query.cursorCalls;
+        query.cursorCalls = [];
+        if(opt){ query.cursorCalls.push(opt); }
+      }
       vars.params.body.query = query;
       return true;
     default : return false;

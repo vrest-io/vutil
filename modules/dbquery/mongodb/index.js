@@ -38,13 +38,41 @@ function func(vars,methods,next){
         return next({message :utils.makemsg(vars,'queryfail',[]),
           code : 'METHOD_NOT_AVL', status : 400 });
       }
-      col[query.command](query.operate, query.options, function(er,rs){
+      var cur = col[query.command](query.operate, query.options);
+      var callback = function(er,rs){
         if(er) {
-          next({ message : (vars.messages.queryfail+(er.message || '')), status : 400 });
+          next({ message :
+            (vars.messages.queryfail+(er.message || '')), status : 400 });
         } else {
-          next({ output : rs.toJSON(), status : 200 });
+          next({ output : rs, status : 200 });
         }
-      });
+      };
+      if(typeof cur.then === 'function'){
+        cur.then(callback);
+      } else if(typeof cur.toArray === 'function'){
+        var cln = query.cursorCalls.length;
+        for(var mak, prms, z = 0; z< cln; z++){
+          mak = cur[query.cursorCalls];
+          if(mak && utils.isStr(mak.call) && typeof cur[mak.call] === 'function'){
+            prms = mak.params;
+            if(prms){
+              if(!(Array.isArray(prms))){
+                prms = [prms];
+              }
+            } else {
+              prms = [];
+            }
+            cur = cur[mak.call].apply(cur, prms);
+          }
+        }
+        if(cur && typeof cur.toArray === 'function'){
+          cur.toArray(callback);
+        } else {
+          next({ message : 'Invalid cursor calls.', status : 400 });
+        }
+      } else {
+        next({ message : '`command` must return a promise or cursor.', status : 400 });
+      }
     }
   });
 }
