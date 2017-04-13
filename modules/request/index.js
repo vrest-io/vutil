@@ -1,7 +1,7 @@
 
 const fs = require('fs'), path = require('path'),
       querystring = require('querystring'),
-      BusBoy = require('busboy'),
+      parser = require('./parser'),
       utils = require('../../utils'),
       allowedOptions = [
         'preambleCRLF','postambleCRLF','timeout',
@@ -13,45 +13,10 @@ function parseAFile(raw){
   return raw;
 }
 
-function getParsedResponse(opts,res,next){
-  var fields = {}, files = {}, errors = {}, busboy = new BusBoy(opts);
-  busboy.on('error', function(err) {
-    errors.failed = 'Multipart request could not be processed';
-  });
-  busboy.on('partsLimit', function() {
-    errors.partsLimit = 'limits of parts reached.';
-  });
-  busboy.on('filesLimit', function() {
-    errors.filesLimit = 'limits of files reached.';
-  });
-  busboy.on('fieldsLimit', function() {
-    errors.fieldsLimit = 'limits of fields reached';
-  });
-  busboy.on('field', function(fieldname, val, fieldT, valT) {
-    fields[fieldname] = val;
-  });
-  busboy.on('file', function(fieldname, file, filename, encoding, mimetype) {
-    files[filename] = {
-      raw : '',
-      fieldname: fieldname,
-      filename : filename,
-      encoding : encoding,
-      mimetype : mimetype
-    };
-    file.on('limit', function() {
-      files[filename].error='File size excceeded the limit.';
-    });
-    file.on('data', function(data) {
-      files[filename].raw += data;
-    });
-    file.on('end', function(data) {
-      files[filename].parsed = parseAFile(files[filename].raw);
-    });
-  });
-  busboy.on('finish', function() {
-    next({ files : files, fields : fields, errors : errors });
-  });
-  res.pipe(busboy);
+function getParsedResponse(opts,res){
+  var body = opts.body;
+  return parser.call(res,body,
+      {boundary:'RCS3LAB__12371235317Asasjkd'||parser.fetchBoundary(opts.headers)});
 }
 
 var CombinedStream = require('combined-stream'), uuid = require('uuid');
@@ -235,8 +200,25 @@ function func(req,res,next){
     }
     toSend.multipart = bds;
   }
+  var multiBody = [],
+      ars = {},
+      toParse = utils.lastValue(req.body, 'options', 'parseResponse') === true,
+      foundAct = false,
+      foundMulti = Boolean(!(toParse));
+  var checkAndSend = function(){
+    if(foundAct && foundMulti){
+      if(toParse){
+        res.send({ actual : ars, multipart : multiBody });
+      } else {
+        res.send(ars);
+      }
+    }
+  };
+  var checkMulti = function(){
+    foundMulti = true;
+    checkAndSend();
+  };
   var cbs = function(err,rs,body){
-    var ars = {};
     if(err) {
       ars.error = err;
     }
@@ -251,15 +233,19 @@ function func(req,res,next){
         ars.output = ars.body;
       }
     }
-    if(utils.lastValue(req.body, 'options', 'parseResponse') === true){
-      getParsedResponse({ headers : rs.headers },rs,function(ab){
-        res.send({ actual : ars, multipart : ab });
-      });
-    } else {
-      res.send(ars);
-    }
+    foundAct = true;
+    checkAndSend();
   };
-  request(toSend,cbs);
+  var mainRequest = request(toSend,cbs);
+  if(toParse){
+    mainRequest.once('response',function(){
+      getParsedResponse({
+        headers : mainRequest.response.headers,
+        body : multiBody
+      }, mainRequest.responseContent).
+      on('_finish',checkMulti);
+    });
+  }
 }
 
 module.exports = func;
