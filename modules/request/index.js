@@ -14,9 +14,7 @@ function parseAFile(raw){
 }
 
 function getParsedResponse(opts,res){
-  var body = opts.body;
-  return parser.call(res,body,
-      {boundary:'RCS3LAB__12371235317Asasjkd'||parser.fetchBoundary(opts.headers)});
+  return parser.call(res,opts.body, {boundary:parser.fetchBoundary(opts.headers)});
 }
 
 var CombinedStream = require('combined-stream'), uuid = require('uuid');
