@@ -14,7 +14,7 @@ function parseAFile(raw){
 }
 
 function getParsedResponse(opts,res){
-  return parser.call(res,opts.body, {boundary:parser.fetchBoundary(opts.headers)});
+  return parser(res,opts.body, {boundary:parser.isMultipartBody(opts.headers)});
 }
 
 var CombinedStream = require('combined-stream'), uuid = require('uuid');
