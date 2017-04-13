@@ -2,7 +2,7 @@ const restify = require('restify');
 const pckg = require('./package.json');
 const activatedModules = require('./config.json').activatedModules || {};
 var server = restify.createServer({
-  handleUncaughtExceptions : true,
+  handleUncaughtExceptions : false,
   name : pckg.name+'@'+pckg.version
 });
 
