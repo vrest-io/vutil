@@ -22,37 +22,41 @@ var CombinedStream = require('combined-stream'), uuid = require('uuid');
 var setHeaders = require('request/lib/multipart').Multipart.prototype.setHeaders;
 
 function handlePartHeader(part,chunked){
-  var plk = Object.keys(part), pln = plk.length;
-  var that = {
-    boundary : uuid(),
-    request : {
-      getHeader : function(ky){
-        for(var z=0;z<pln;z++){
-          if(plk[z].toLowerCase()===ky.toLowerCase()){
-            return (part[plk[z]]);
+  if(Array.isArray(part.body) && plk.body.length > 1){
+    var plk = Object.keys(part), pln = plk.length;
+    var that = {
+      boundary : uuid(),
+      request : {
+        getHeader : function(ky){
+          for(var z=0;z<pln;z++){
+            if(plk[z].toLowerCase()===ky.toLowerCase()){
+              return (part[plk[z]]);
+            }
           }
-        }
-        return false;
-      },
-      hasHeader : function(ky){
-        return Boolean(this.getHeader(ky));
-      },
-      setHeader : function(ky,vl){
-        for(var st = true, z=0;z<pln;z++){
-          if(plk[z].toLowerCase()===ky.toLowerCase()){
-            part[plk[z]] = vl;
-            st = false;
-            break;
+          return false;
+        },
+        hasHeader : function(ky){
+          return Boolean(this.getHeader(ky));
+        },
+        setHeader : function(ky,vl){
+          for(var st = true, z=0;z<pln;z++){
+            if(plk[z].toLowerCase()===ky.toLowerCase()){
+              part[plk[z]] = vl;
+              st = false;
+              break;
+            }
           }
-        }
-        if(st){
-          part[ky] = vl;
+          if(st){
+            part[ky] = vl;
+          }
         }
       }
-    }
-  };
-  setHeaders.bind(that)(chunked);
-  return that.boundary;
+    };
+    setHeaders.bind(that)(chunked);
+    return that.boundary;
+  } else {
+    return undefined;
+  }
 }
 
 require('request/lib/multipart').Multipart.prototype.build = function (parts, chunked) {
@@ -65,12 +69,17 @@ require('request/lib/multipart').Multipart.prototype.build = function (parts, ch
     // change part starts
     } else if(typeof part === 'object' && part) {
       if(Array.isArray(part)){
-        var prvB = self.boundary;
-        self.boundary = boundary;
+        if(boundary !== undefined){
+          var prvB = self.boundary;
+          self.boundary = boundary;
+        }
         part = self.build(part,chunked);
-        self.boundary = prvB;
+        if(boundary !== undefined){
+          self.boundary = prvB;
+        }
       } else if(part.filePath){
-        part = getFile(part,true);
+        var part = getFile(part,true);
+        if(part === false) part = '';
       }
     }
     // change part ends
@@ -113,12 +122,18 @@ const encoders = function(ab){
 
 const getFile = function(ab,nostr){
   if(typeof ab === 'string'){
-    return nostr ? ab : fs.createReadStream(ab);
+    if(nostr) return ab;
+    var st;
+    try{ st = fs.accessSync(ab,fs.constants.F_OK); }catch(er){return false; }
+    return fs.createReadStream(ab);
   } else if(typeof ab === 'object' && ab){
     if(Array.isArray(ab)){
       return ab;
     } else if(typeof ab.filePath === 'string'){
       var enc = ab.encode;
+      var st;
+      try{ st = fs.accessSync(ab.filePath,fs.constants.F_OK); }catch(er){
+        return false; }
       var ret = fs.createReadStream(ab.filePath);
       if(typeof enc === 'string'){
         var enc = encoders(enc);
@@ -132,6 +147,40 @@ const getFile = function(ab,nostr){
     return false;
   }
 };
+
+/*
+ * fileForm {
+ *  filePath : <path of file>
+ *  encode : <encoding>
+ *  body : ArrayOf(fileForm)
+ * }
+ *
+ * request payload
+ *
+ * url : <url>
+ * method : <method>
+ * headers : {}
+ * json : {
+ *  data for json payload
+ * }
+ * formData : {
+ *  // Pass a simple key-value pair
+    my_field: 'my_value',
+    // Pass multiple values /w an Array
+    attachments: [
+      <fileForm>
+      <fileForm>
+    ]
+ * },
+ * filePath : <filepath that to be attached to form data>
+ * fileKey : <filekey for above filepath>
+ * multipart : ArrayOf(fileForm)
+ * options : {
+ *  above available options plus parseResponse to parse multipart response
+ * }
+ *
+ * */
+
 
 function func(req,res,next){
   if(!req.body){
@@ -183,7 +232,7 @@ function func(req,res,next){
     toSend.formData = formData;
   }
   var jsn = req.body.json;
-  if(typeof jsn === 'object' && jsn !== null && Object.keys(json).length){
+  if(typeof jsn === 'object' && jsn !== null && Object.keys(jsn).length){
     toSend.json = jsn;
   }
   if(Array.isArray(req.body.multipart)){
@@ -242,6 +291,11 @@ function func(req,res,next){
         body : multiBody
       }, mainRequest.responseContent).
       on('_finish',checkMulti);
+    });
+    mainRequest.once('error',function(err){
+      checkAndSend = function(){};
+      checkMulti = function(){};
+      res.send(400, { message : err.message || err })
     });
   }
 }

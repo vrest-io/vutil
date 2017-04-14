@@ -15,7 +15,7 @@ function func(req, res) {
   }
 
   fs.stat(filename, function(err, stats) {
-    if(err) { 
+    if(err) {
       if(err.code === "ENOENT"){
         return sendError(res, "File Not Found", 404);
       }
@@ -37,7 +37,7 @@ function func(req, res) {
         if(err) {
           return sendError(res, err.message || err, 501);
         }
-        
+
         if(filename.endsWith('json')){
           res.writeHead(200, { "Content-Type": "application/json" });
         } else if(filename.endsWith('xml')){

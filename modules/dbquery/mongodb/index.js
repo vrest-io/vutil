@@ -9,7 +9,8 @@ const utils = require('../../../utils');
     "colName" : "<Collection Name>",
     "command" : "<function to call, eg findOne, find, remove, update etc>",
     "operate" : "<first parameter object passed into db query, eg {}, { "$where" : "blah blah" }>",
-    "options" : "<second parameter object passed into db query, eg { "$set" : {} }>"
+    "options" : "<second parameter object passed into db query, eg { "$set" : {} }>",
+    "cursorCalls" : "<Array or object, each can have two properties. 1. call : 'string,<of which cursor have a method>' 2.params: the object/Array/Mixed/absent <that will be passed as parameter to above call> eg { call : 'limit', params : 1 }>"
   }
 }
 */
@@ -31,31 +32,31 @@ function func(vars,methods,next){
       var col;
       try { col = con.collection(query && query.colName); } catch(erm){}
       if(!col){
-        return next({message : utils.makemsg(vars,'queryfail',[]),
+        return next({message :vars.messages.queryfail,
           code : 'COL_NOT_AVL', status : 400 });
       }
       if(typeof col[query.command] !== 'function'){
-        return next({message :utils.makemsg(vars,'queryfail',[]),
+        return next({message :vars.messages.queryfail,
           code : 'METHOD_NOT_AVL', status : 400 });
       }
       var cur = col[query.command](query.operate, query.options);
       var callback = function(er,rs){
         if(er) {
           next({ message :
-            (vars.messages.queryfail+(er.message || '')), status : 400 });
+            (vars.messages.queryfail+(er.message || er)), status : 400 });
         } else {
           next({ output : rs, status : 200 });
         }
       };
       if(typeof cur.then === 'function'){
-        cur.then(callback);
+        cur.then(callback.bind(null,null));
       } else if(typeof cur.toArray === 'function'){
         var cln = query.cursorCalls.length;
         for(var mak, prms, z = 0; z< cln; z++){
-          mak = cur[query.cursorCalls];
+          mak = query.cursorCalls[z];
           if(mak && utils.isStr(mak.call) && typeof cur[mak.call] === 'function'){
             prms = mak.params;
-            if(prms){
+            if(prms !== undefined){
               if(!(Array.isArray(prms))){
                 prms = [prms];
               }
