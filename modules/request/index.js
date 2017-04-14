@@ -22,7 +22,7 @@ var CombinedStream = require('combined-stream'), uuid = require('uuid');
 var setHeaders = require('request/lib/multipart').Multipart.prototype.setHeaders;
 
 function handlePartHeader(part,chunked){
-  if(Array.isArray(part.body) && plk.body.length > 1){
+  if(Array.isArray(part.body) && part.body.length > 1){
     var plk = Object.keys(part), pln = plk.length;
     var that = {
       boundary : uuid(),
