@@ -116,16 +116,16 @@ const getFile = function(ab,nostr){
   if(typeof ab === 'string'){
     if(nostr) return ab;
     var st;
-    try{ st = fs.fstatSync(ab); }catch(er){ return false; }
-    return (st.isFile() ? fs.createReadStream(ab) : false);
+    try{ st = fs.accessSync(ab,fs.constants.F_OK); }catch(er){return false; }
+    return fs.createReadStream(ab);
   } else if(typeof ab === 'object' && ab){
     if(Array.isArray(ab)){
       return ab;
     } else if(typeof ab.filePath === 'string'){
       var enc = ab.encode;
       var st;
-      try{ st = fs.fstatSync(ab.filePath); }catch(er){ return false; }
-      if(!(st.isFile())){ return false; }
+      try{ st = fs.accessSync(ab.filePath,fs.constants.F_OK); }catch(er){
+        return false; }
       var ret = fs.createReadStream(ab.filePath);
       if(typeof enc === 'string'){
         var enc = encoders(enc);
