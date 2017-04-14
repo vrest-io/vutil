@@ -70,7 +70,8 @@ require('request/lib/multipart').Multipart.prototype.build = function (parts, ch
         part = self.build(part,chunked);
         self.boundary = prvB;
       } else if(part.filePath){
-        part = getFile(part,true);
+        var part = getFile(part,true);
+        if(part === false) part = '';
       }
     }
     // change part ends
@@ -113,12 +114,18 @@ const encoders = function(ab){
 
 const getFile = function(ab,nostr){
   if(typeof ab === 'string'){
-    return nostr ? ab : fs.createReadStream(ab);
+    if(nostr) return ab;
+    var st;
+    try{ st = fs.fstatSync(ab); }catch(er){ return false; }
+    return (st.isFile() ? fs.createReadStream(ab) : false);
   } else if(typeof ab === 'object' && ab){
     if(Array.isArray(ab)){
       return ab;
     } else if(typeof ab.filePath === 'string'){
       var enc = ab.encode;
+      var st;
+      try{ st = fs.fstatSync(ab.filePath); }catch(er){ return false; }
+      if(!(st.isFile())){ return false; }
       var ret = fs.createReadStream(ab.filePath);
       if(typeof enc === 'string'){
         var enc = encoders(enc);
@@ -217,7 +224,7 @@ function func(req,res,next){
     toSend.formData = formData;
   }
   var jsn = req.body.json;
-  if(typeof jsn === 'object' && jsn !== null && Object.keys(json).length){
+  if(typeof jsn === 'object' && jsn !== null && Object.keys(jsn).length){
     toSend.json = jsn;
   }
   if(Array.isArray(req.body.multipart)){
