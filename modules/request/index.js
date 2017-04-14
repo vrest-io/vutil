@@ -133,6 +133,40 @@ const getFile = function(ab,nostr){
   }
 };
 
+/*
+ * fileForm {
+ *  filePath : <path of file>
+ *  encode : <encoding>
+ *  body : ArrayOf(fileForm)
+ * }
+ *
+ * request payload
+ *
+ * url : <url>
+ * method : <method>
+ * headers : {}
+ * json : {
+ *  data for json payload
+ * }
+ * formData : {
+ *  // Pass a simple key-value pair
+    my_field: 'my_value',
+    // Pass multiple values /w an Array
+    attachments: [
+      <fileForm>
+      <fileForm>
+    ]
+ * },
+ * filePath : <filepath that to be attached to form data>
+ * fileKey : <filekey for above filepath>
+ * multipart : ArrayOf(fileForm)
+ * options : {
+ *  above available options plus parseResponse to parse multipart response
+ * }
+ *
+ * */
+
+
 function func(req,res,next){
   if(!req.body){
     return res.send(400, { message : "Invalid request payload" });
@@ -242,6 +276,11 @@ function func(req,res,next){
         body : multiBody
       }, mainRequest.responseContent).
       on('_finish',checkMulti);
+    });
+    mainRequest.once('error',function(err){
+      checkAndSend = function(){};
+      checkMulti = function(){};
+      res.send(400, { message : err.message || err })
     });
   }
 }

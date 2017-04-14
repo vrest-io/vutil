@@ -15,20 +15,19 @@ function func(req, res) {
 
   fs.stat(filename, function(err,exists) {
     if(err) {
-      return sendError(res, err.message || err, 501);
+      return sendError(res, err.message || err, 401);
     }
     if(!exists) {
       return sendError(res, "File Not Found", 404);
     }
 
     if (!(exists.isFile())) {
-      return
-        sendError(res,"The path is a directory. Please provide a path of file", 406);
+      return sendError(res,"The path is a directory. Please provide a path of file", 406);
     }
 
     fs.readFile(filename, function(err, file) {
       if(err) {
-        return sendError(res, err.message || err, 501);
+        return sendError(res, err.message || err, 401);
       }
 
       if(filename.endsWith('json')){
