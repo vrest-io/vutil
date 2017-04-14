@@ -44,11 +44,11 @@ paths:
         408:
           description: Timeout Response. If the command takes time to execute, then this response will be returned after the configured timeout period.
           schema:
-            $ref: '#/definitions/TimeoutResponse'
+            $ref: '#/definitions/CommandError'
         400:
           description: Unexpected error
           schema:
-            $ref: '#/definitions/Error'
+            $ref: '#/definitions/CommandError'
   /execute/dbquery/{conn}:
     post:
       summary: Executes a database query
@@ -128,12 +128,12 @@ definitions:
       output:
         type: object
         description: Database Query Result
-  TimeoutResponse:
+  CommandError:
     type: object
     properties:
       message:
         type: string
-        description: Timeout error message.
+        description: Command error message.
       pid:
         type: number
         description: Process Id
