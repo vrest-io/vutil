@@ -22,37 +22,41 @@ var CombinedStream = require('combined-stream'), uuid = require('uuid');
 var setHeaders = require('request/lib/multipart').Multipart.prototype.setHeaders;
 
 function handlePartHeader(part,chunked){
-  var plk = Object.keys(part), pln = plk.length;
-  var that = {
-    boundary : uuid(),
-    request : {
-      getHeader : function(ky){
-        for(var z=0;z<pln;z++){
-          if(plk[z].toLowerCase()===ky.toLowerCase()){
-            return (part[plk[z]]);
+  if(Array.isArray(part.body) && plk.body.length > 1){
+    var plk = Object.keys(part), pln = plk.length;
+    var that = {
+      boundary : uuid(),
+      request : {
+        getHeader : function(ky){
+          for(var z=0;z<pln;z++){
+            if(plk[z].toLowerCase()===ky.toLowerCase()){
+              return (part[plk[z]]);
+            }
           }
-        }
-        return false;
-      },
-      hasHeader : function(ky){
-        return Boolean(this.getHeader(ky));
-      },
-      setHeader : function(ky,vl){
-        for(var st = true, z=0;z<pln;z++){
-          if(plk[z].toLowerCase()===ky.toLowerCase()){
-            part[plk[z]] = vl;
-            st = false;
-            break;
+          return false;
+        },
+        hasHeader : function(ky){
+          return Boolean(this.getHeader(ky));
+        },
+        setHeader : function(ky,vl){
+          for(var st = true, z=0;z<pln;z++){
+            if(plk[z].toLowerCase()===ky.toLowerCase()){
+              part[plk[z]] = vl;
+              st = false;
+              break;
+            }
           }
-        }
-        if(st){
-          part[ky] = vl;
+          if(st){
+            part[ky] = vl;
+          }
         }
       }
-    }
-  };
-  setHeaders.bind(that)(chunked);
-  return that.boundary;
+    };
+    setHeaders.bind(that)(chunked);
+    return that.boundary;
+  } else {
+    return undefined;
+  }
 }
 
 require('request/lib/multipart').Multipart.prototype.build = function (parts, chunked) {
@@ -65,10 +69,14 @@ require('request/lib/multipart').Multipart.prototype.build = function (parts, ch
     // change part starts
     } else if(typeof part === 'object' && part) {
       if(Array.isArray(part)){
-        var prvB = self.boundary;
-        self.boundary = boundary;
+        if(boundary !== undefined){
+          var prvB = self.boundary;
+          self.boundary = boundary;
+        }
         part = self.build(part,chunked);
-        self.boundary = prvB;
+        if(boundary !== undefined){
+          self.boundary = prvB;
+        }
       } else if(part.filePath){
         var part = getFile(part,true);
         if(part === false) part = '';
