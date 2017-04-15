@@ -21,7 +21,7 @@ var bodyParser = restify.bodyParser({ mapParams: false });
 var queryParser = restify.queryParser({ mapParams: false });
 
 if(activatedModules.dbquery){
-  server.post('/execute/dbquery/:conn', bodyParser, dbQuery);
+  server.post('/execute/dbquery/:connection', bodyParser, dbQuery);
 }
 if(activatedModules.command){
   server.post('/execute/command', bodyParser, cmdQuery);
@@ -33,8 +33,8 @@ if(activatedModules.request){
   server.post('/request', bodyParser, request);
 }
 
-if(activatedModules.read){
-  server.get('/read', queryParser, reader);
+if(activatedModules.file){
+  server.get('/file', queryParser, reader);
 }
 
 server.listen(process.env.PORT || 3000, function() {

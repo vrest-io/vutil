@@ -28,9 +28,10 @@ for(var z = 0; z < ln; z++){
 const cons = Object.keys(conMap);
 
 function func(vars){
-  if(cons.indexOf(vars.params.path.conn) !== -1){
-    vars.connType = conMap[vars.params.path.conn].type;
-    vars.connConfig = conMap[vars.params.path.conn].config;
+  var con = vars.params.path.connection;
+  if(cons.indexOf(con) !== -1){
+    vars.connType = conMap[con].type;
+    vars.connConfig = conMap[con].config;
     return true;
   } else {
     vars.conErrorType = 'invalidconname';

@@ -19,7 +19,7 @@ function getConnection(config,nm,connect,next){
 }
 
 function func(vars,methods,connect,next){
-  getConnection(vars.connConfig,vars.params.path.conn,connect,next);
+  getConnection(vars.connConfig,vars.params.path.connection,connect,next);
 }
 
 module.exports = func;
