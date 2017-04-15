@@ -1,5 +1,3 @@
-# this is an example of the Uber API
-# as a demonstration of an API spec in YAML
 swagger: '2.0'
 info:
   title: vREST Utlity APIs
@@ -9,10 +7,11 @@ info:
     2. Execute DB CRUD operations via REST API for Database Validation
     3. Convert CSV to JSON via REST API and is useful in data driven testing
     4. Uploads file via REST API which was missing in vREST itself.
+    5. Reads text file via REST API which is stored on your local machine.
 
-    All file paths must be relative to configured data directory. Data Directory can be anywhere on your system. You may version control this data directory at your own choice. Examples of file paths are as follows:
-    1. $dataDir/csvs/create-contact.csv
-    2. $dataDir/files/sample-file.png
+    All file paths must be absolute file paths. Data Directory can be anywhere on your system. You may version control this data directory at your own choice. Examples of file paths are as follows:
+    1. /Users/xyz/data/csvs/create-contact.csv
+    2. /Users/xyz/data/files/sample-file.png
   version: "1.0.0"
 # the domain of the service
 host: yourdomain.com
@@ -49,12 +48,12 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/CommandError'
-  /execute/dbquery/{conn}:
+  /execute/dbquery/{connection}:
     post:
       summary: Executes a database query
       description: This API will execute the database query specified and returns the results as JSON.
       parameters:
-        - name: conn
+        - name: connection
           in: path
           description: Connection name
           required: true
@@ -87,6 +86,11 @@ paths:
           description: CSV File path to be converted
           required: true
           type: string
+        - name: options
+          in: formData
+          description: CSV to JSON conversion options
+          required: false
+          type: object
       responses:
         200:
           description: Converted JSON file
