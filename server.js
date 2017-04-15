@@ -33,8 +33,8 @@ if(activatedModules.request){
   server.post('/request', bodyParser, request);
 }
 
-if(activatedModules.read){
-  server.get('/read', queryParser, reader);
+if(activatedModules.file){
+  server.get('/file', queryParser, reader);
 }
 
 server.listen(process.env.PORT || 3000, function() {

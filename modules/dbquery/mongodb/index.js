@@ -6,11 +6,10 @@ const utils = require('../../../utils');
  * Payload
 {
   "query" :{
-    "colName" : "<Collection Name>",
+    "collection" : "<Collection Name>",
     "command" : "<function to call, eg findOne, find, remove, update etc>",
-    "operate" : "<first parameter object passed into db query, eg {}, { "$where" : "blah blah" }>",
-    "options" : "<second parameter object passed into db query, eg { "$set" : {} }>",
-    "cursorCalls" : "<Array or object, each can have two properties. 1. call : 'string,<of which cursor have a method>' 2.params: the object/Array/Mixed/absent <that will be passed as parameter to above call> eg { call : 'limit', params : 1 }>"
+    "args" : "<Array or object as parameters object passed into db query, eg [{ "$where" : "blah blah" },{ $set : { setIt : true } }]>",
+    "cursorMethods" : "<Array or object, each can have two properties. 1. method : 'string,<of which cursor have a method>' 2.value: the object/Array/Mixed/absent <that will be passed as parameter to above call> eg { method : 'limit', value : 1 }>"
   }
 }
 */
@@ -30,7 +29,7 @@ function func(vars,methods,next){
       next({ message : (vars.messages[ert] || ert), status : 400 });
     } else {
       var col;
-      try { col = con.collection(query && query.colName); } catch(erm){}
+      try { col = con.collection(query && query.collection); } catch(erm){}
       if(!col){
         return next({message :vars.messages.queryfail,
           code : 'COL_NOT_AVL', status : 400 });
@@ -39,7 +38,7 @@ function func(vars,methods,next){
         return next({message :vars.messages.queryfail,
           code : 'METHOD_NOT_AVL', status : 400 });
       }
-      var cur = col[query.command](query.operate, query.options);
+      var cur = col[query.command].apply(col, query.args);
       var callback = function(er,rs){
         if(er) {
           next({ message :
@@ -51,11 +50,11 @@ function func(vars,methods,next){
       if(typeof cur.then === 'function'){
         cur.then(callback.bind(null,null));
       } else if(typeof cur.toArray === 'function'){
-        var cln = query.cursorCalls.length;
+        var cln = query.cursorMethods.length;
         for(var mak, prms, z = 0; z< cln; z++){
-          mak = query.cursorCalls[z];
-          if(mak && utils.isStr(mak.call) && typeof cur[mak.call] === 'function'){
-            prms = mak.params;
+          mak = query.cursorMethods[z];
+          if(mak && utils.isStr(mak.method) && typeof cur[mak.method] === 'function'){
+            prms = mak.value;
             if(prms !== undefined){
               if(!(Array.isArray(prms))){
                 prms = [prms];
@@ -63,7 +62,7 @@ function func(vars,methods,next){
             } else {
               prms = [];
             }
-            cur = cur[mak.call].apply(cur, prms);
+            cur = cur[mak.method].apply(cur, prms);
           }
         }
         if(cur && typeof cur.toArray === 'function'){

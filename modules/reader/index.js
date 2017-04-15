@@ -9,12 +9,12 @@ function sendError(res,msg,st){
 
 function func(req, res) {
 
-  var filename = req.query.filename;
-  if(typeof filename !== 'string' || !filename.length){
-    return sendError(res,'`filename` is a required query parameter', 400);
+  var fileName = req.query.fileName;
+  if(typeof fileName !== 'string' || !fileName.length){
+    return sendError(res,'`fileName` is a required query parameter', 400);
   }
 
-  fs.stat(filename, function(err, stats) {
+  fs.stat(fileName, function(err, stats) {
     if(err) {
       if(err.code === "ENOENT"){
         return sendError(res, "File Not Found", 404);
@@ -27,20 +27,20 @@ function func(req, res) {
     }
 
     var magic = new mmm.Magic(mmm.MAGIC_MIME_TYPE);
-    magic.detectFile(filename, function(err, contentType) {
+    magic.detectFile(fileName, function(err, contentType) {
       if(err) return sendError(res, 'Error while detecting the mime type for file.', 400);
       if(contentType.indexOf("text") === -1){
         return sendError(res, 'File type not supported', 400);
       }
 
-      fs.readFile(filename, function(err, file) {
+      fs.readFile(fileName, function(err, file) {
         if(err) {
           return sendError(res, err.message || err, 501);
         }
 
-        if(filename.endsWith('json')){
+        if(fileName.endsWith('json')){
           res.writeHead(200, { "Content-Type": "application/json" });
-        } else if(filename.endsWith('xml')){
+        } else if(fileName.endsWith('xml')){
           res.writeHead(200, { "Content-Type": "application/xml" });
         } else {
           res.writeHead(200, { "Content-Type": contentType });
