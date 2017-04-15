@@ -11,11 +11,16 @@
     "mssql": "^3.3.0",
     "stream-buffers":"^3.0.1",
     "mysql": "^2.13.0",
-    "oracledb": "^1.13.0",
     "pg": "^6.1.5",
     "restify": "^4.3.0",
     "request": "^2.81.0"
   },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/vrest-io/vutil/blob/master/LICENSE-MIT"
+    }
+  ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -35,6 +40,5 @@
     "query"
   ],
   "author": "support@vrest.io",
-  "license": "ISC",
   "homepage": "https://github.com/vrest-io/vutil"
 }
