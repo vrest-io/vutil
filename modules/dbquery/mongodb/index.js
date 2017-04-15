@@ -38,7 +38,11 @@ function func(vars,methods,next){
         return next({message :vars.messages.queryfail,
           code : 'METHOD_NOT_AVL', status : 400 });
       }
-      var cur = col[query.command].apply(col, query.args);
+      try {
+        var cur = col[query.command].apply(col, query.args);
+      } catch(er){
+        return next({ message : (er.message || er), status : 400 });
+      }
       var callback = function(er,rs){
         if(er) {
           next({ message :
