@@ -21,7 +21,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://dheerajoptimizory@bitbucket.org/dheerajoptimizory/vutil.git"
+    "url": "git@github.com:vrest-io/vutil.git"
   },
   "keywords": [
     "vrest",
@@ -36,5 +36,5 @@
   ],
   "author": "support@vrest.io",
   "license": "ISC",
-  "homepage": "https://bitbucket.org/dheerajoptimizory/vutil#readme"
+  "homepage": "https://github.com/vrest-io/vutil"
 }
