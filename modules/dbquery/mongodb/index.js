@@ -9,7 +9,7 @@ const utils = require('../../../utils');
     "collection" : "<Collection Name>",
     "command" : "<function to call, eg findOne, find, remove, update etc>",
     "args" : "<Array or object as parameters object passed into db query, eg [{ "$where" : "blah blah" },{ $set : { setIt : true } }]>",
-    "cursorMethods" : "<Array or object, each can have two properties. 1. method : 'string,<of which cursor have a method>' 2.value: the object/Array/Mixed/absent <that will be passed as parameter to above call> eg { method : 'limit', value : 1 }>"
+    "cursorMethods" : "<Array or object, each can have two properties. 1. method : 'string,<of which cursor have a method>' 2.params: the object/Array/Mixed/absent <that will be passed as parameter to above call> eg { method : 'limit', params : 1 }>"
   }
 }
 */
@@ -58,7 +58,7 @@ function func(vars,methods,next){
         for(var mak, prms, z = 0; z< cln; z++){
           mak = query.cursorMethods[z];
           if(mak && utils.isStr(mak.method) && typeof cur[mak.method] === 'function'){
-            prms = mak.value;
+            prms = mak.params;
             if(prms !== undefined){
               if(!(Array.isArray(prms))){
                 prms = [prms];
