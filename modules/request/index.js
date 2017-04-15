@@ -79,7 +79,10 @@ require('request/lib/multipart').Multipart.prototype.build = function (parts, ch
         }
       } else if(part.filePath){
         var part = getFile(part,true);
-        if(part === false) part = '';
+        if(part === false){
+          self.request.emit('error', new Error('File path not found at `'+part.filePath+'`'));
+          part = '';
+        }
       }
     }
     // change part ends
@@ -199,7 +202,11 @@ function func(req,res,next){
         kn = bd[ky], kl = kn.length;
         for(var z=0;z<kl;z++){
           rs = getFile(kn[z]);
-          if(rs) { kn[z] = rs; }
+          if(rs) {
+            kn[z] = rs;
+          } else {
+            return res.send(400, { message : "File to upload not found." });
+          }
         }
       } else {
         formData[ky] = getFile(bd,true);
@@ -214,6 +221,8 @@ function func(req,res,next){
     rs = getFile(req.body);
     if(rs) {
       formData[fl] = rs;
+    } else {
+      return res.send(400, { message : "File to upload not found at path `"+req.body.filePath+"`." });
     }
   }
   var toSend = {
@@ -242,6 +251,8 @@ function func(req,res,next){
         rs = getFile(bds[z].body);
         if(rs){
           bds[z].body = rs;
+        } else {
+          return res.send(400, { message : "File to upload not found at path `"+bds[z].body.filePath+"`." });
         }
       }
     }

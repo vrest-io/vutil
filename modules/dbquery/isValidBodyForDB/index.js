@@ -31,7 +31,7 @@ function func(vars,methods){
           if(opt){ query[inp].push(opt); }
         }
       });
-      vars.params.body.query = query;
+      vars.params.body = query;
       return true;
     default : return false;
   }
