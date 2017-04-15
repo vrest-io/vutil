@@ -21,7 +21,7 @@ var bodyParser = restify.bodyParser({ mapParams: false });
 var queryParser = restify.queryParser({ mapParams: false });
 
 if(activatedModules.dbquery){
-  server.post('/execute/dbquery/:conn', bodyParser, dbQuery);
+  server.post('/execute/dbquery/:connection', bodyParser, dbQuery);
 }
 if(activatedModules.command){
   server.post('/execute/command', bodyParser, cmdQuery);

@@ -11,6 +11,7 @@ function func(vars,methods){
     case 'oracle' :
       return (typeof query === 'string' && query.length);
     case 'mongodb' :
+      query = utils.lastValue(vars.params, 'body');
       vars.params.body.query = {};
       if(typeof query !== 'object' || query === null){
         query = { collection : typeof query === 'string' ? query : false };

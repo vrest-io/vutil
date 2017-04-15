@@ -24,7 +24,7 @@ function func(vars,methods,next){
       cb(erm.message);
     }
   }, function(ert,con){
-    var query = utils.lastValue(vars.params, 'body','query');
+    var query = utils.lastValue(vars.params, 'body');
     if(ert) {
       next({ message : (vars.messages[ert] || ert), status : 400 });
     } else {
@@ -48,7 +48,7 @@ function func(vars,methods,next){
         }
       };
       if(typeof cur.then === 'function'){
-        cur.then(callback.bind(null,null));
+        cur.then(callback.bind(null,null),callback.bind(null));
       } else if(typeof cur.toArray === 'function'){
         var cln = query.cursorMethods.length;
         for(var mak, prms, z = 0; z< cln; z++){

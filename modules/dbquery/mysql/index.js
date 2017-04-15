@@ -15,7 +15,10 @@ function func(vars,methods,next){
     } else {
       con.query(query,function(err,results){
         if(err) {
-          next({ message : (vars.messages.queryfail+(err.message || '')), status : 400 });
+          next({
+            message : (vars.messages.queryfail+(err.message || '')),
+            status : 400
+          });
         } else {
           next({ output : results, status : 200 });
         }
