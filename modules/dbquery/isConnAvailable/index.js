@@ -11,7 +11,7 @@ if(!Array.isArray(connections)){
 
 var ln = connections.length;
 
-const contypes = ['mongodb','mysql','postgres','mssql','oracle'];
+const contypes = ['mongodb','mysql','postgres'];
 
 for(var z = 0; z < ln; z++){
   if(contypes.indexOf(connections[z].type) === -1){

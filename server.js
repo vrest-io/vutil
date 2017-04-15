@@ -10,7 +10,7 @@ var rootHandler = require('./modules/root'),
   dbQuery = require('./modules/dbquery'),
   cmdQuery = require('./modules/command'),
   csv2json = require('./modules/csv2json'),
-  request = require('./modules/request'),
+  //request = require('./modules/request'),
   reader = require('./modules/reader');
 
 server.use(restify.acceptParser(server.acceptable));
@@ -30,7 +30,8 @@ if(activatedModules.csv2json){
   server.post('/convert/csv/json', bodyParser, csv2json);
 }
 if(activatedModules.request){
-  server.post('/request', bodyParser, request);
+  //TODO
+  //server.post('/request', bodyParser, request);
 }
 
 if(activatedModules.file){
