@@ -3,7 +3,6 @@ const utils = require('../../../utils');
 
 function func(vars,methods){
   var query = utils.lastValue(vars.params, 'body','query');
-  if(!query) return false;
   switch(utils.lastValue(vars,'connType')){
     case 'mysql' :
     case 'mssql' :
@@ -11,8 +10,7 @@ function func(vars,methods){
     case 'oracle' :
       return (typeof query === 'string' && query.length);
     case 'mongodb' :
-      query = (utils.lastValue(vars.params, 'body', 'query') ||
-        utils.lastValue(vars.params, 'body'));
+      query = (query || utils.lastValue(vars.params, 'body'));
       vars.params.body.query = {};
       if(typeof query !== 'object' || query === null){
         query = { collection : typeof query === 'string' ? query : false };
