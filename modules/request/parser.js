@@ -126,6 +126,8 @@ function next(stream, body, opts) {
     });
   }).on('error', function(err) {
     error = err;
+  }).on('finish', function() {
+    checkLastAndFinish();
   });
 
   stream.pipe(dicer);
