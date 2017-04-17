@@ -16,6 +16,12 @@
     "restify": "^4.3.0",
     "request": "^2.81.0"
   },
+  "bin":{
+    "vutil":"server.js"
+  },
+  "engines": {
+    "node": ">= 6.0.0"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
