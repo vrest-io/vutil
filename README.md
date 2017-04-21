@@ -6,3 +6,4 @@ vREST Utility which provides the following functions:
 * Executes a DB query via REST API
 * Converts CSV to JSON via REST API
 * Fires multipart request
+* Reads Text files via REST API
