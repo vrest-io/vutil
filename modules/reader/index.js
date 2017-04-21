@@ -30,16 +30,19 @@ function func(req, res) {
         return sendError(res, err.message || err, 501);
       }
 
-      if(filePath.endsWith('json')){
-        res.writeHead(200, { "Content-Type": "application/json" });
-      } else if(filePath.endsWith('xml')){
-        res.writeHead(200, { "Content-Type": "application/xml" });
-      } else {
-        res.writeHead(200, {
-          "Content-Type": String(req.query.defaultContentType || "application/x-octet-stream")
-        });
+      var contentType = String(req.query.contentType);
+      if(!contentType){
+        if(filePath.endsWith('json')){
+          contentType = "application/json";
+          
+        } else if(filePath.endsWith('xml')){
+          contentType = "application/xml";
+        } else {
+          contentType = "application/octet-stream";
+        }
       }
 
+      res.writeHead(200, { "Content-Type":  contentType});
       res.write(file);
       res.end();
     });
