@@ -1,4 +1,4 @@
-# vUtil #
+# vutil #
 
 vREST Utility which provides the following functions:
 

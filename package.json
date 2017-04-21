@@ -39,6 +39,9 @@
     "db",
     "query"
   ],
-  "author": "support@vrest.io",
+  "author": {
+    "name": "vREST Team",
+    "email": "team@vrest.io"
+  },
   "homepage": "https://github.com/vrest-io/vutil"
 }
