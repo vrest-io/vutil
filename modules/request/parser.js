@@ -3,10 +3,6 @@ var Dicer = require('dicer'),
     setHeaders = require('request/lib/multipart').Multipart.prototype.setHeaders,
     streamBuffers = require('stream-buffers');
 
-var result = {
-  body: []
-};
-
 var forOnePart = function(ps,part,mainBody){
   var partResult = {
     headers: part.header,
@@ -126,6 +122,8 @@ function next(stream, body, opts) {
     });
   }).on('error', function(err) {
     error = err;
+  }).on('finish', function() {
+    checkLastAndFinish();
   });
 
   stream.pipe(dicer);

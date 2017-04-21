@@ -300,8 +300,8 @@ function func(req,res,next){
       getParsedResponse({
         headers : mainRequest.response.headers,
         body : multiBody
-      }, mainRequest.responseContent).
-      on('_finish',checkMulti);
+      }, mainRequest.responseContent)
+      .once('_finish',checkMulti);
     });
     mainRequest.once('error',function(err){
       checkAndSend = function(){};

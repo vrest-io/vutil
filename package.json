@@ -15,6 +15,12 @@
     "restify": "^4.3.0",
     "request": "^2.81.0"
   },
+  "bin":{
+    "vutil-server":"server.js"
+  },
+  "engines": {
+    "node": ">= 6.0.0"
+  },
   "licenses": [
     {
       "type": "MIT",
