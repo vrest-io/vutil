@@ -1,13 +1,4 @@
-var path = require("path"), fs = require("fs"), mmm;
-try{
-  mmm = require("mmmagic");
-} catch(er){
-  var Magic = function(){};
-  Magic.prototype.detectFile = function(path,cb){
-    cb(null,'text/plain');
-  };
-  mmm = { Magic : Magic };
-}
+var path = require("path"), fs = require("fs");
 
 function sendError(res,msg,st){
   res.writeHead(st, {"Content-Type": "application/json"});
@@ -17,12 +8,12 @@ function sendError(res,msg,st){
 
 function func(req, res) {
 
-  var fileName = req.query.fileName;
-  if(typeof fileName !== 'string' || !fileName.length){
-    return sendError(res,'`fileName` is a required query parameter', 400);
+  var filePath = req.query.filePath;
+  if(typeof filePath !== 'string' || !filePath.length){
+    return sendError(res,'`filePath` is a required query parameter', 400);
   }
 
-  fs.stat(fileName, function(err, stats) {
+  fs.stat(filePath, function(err, stats) {
     if(err) {
       if(err.code === "ENOENT"){
         return sendError(res, "File Not Found", 404);
@@ -34,27 +25,23 @@ function func(req, res) {
       return sendError(res,"The path is a directory. Please provide a path of file", 400);
     }
 
-    var magic = new mmm.Magic(mmm.MAGIC_MIME_TYPE);
-    magic.detectFile(fileName, function(err, contentType) {
-      if(err) return sendError(res, 'Error while detecting the mime type for file.', 400);
-      fs.readFile(fileName, function(err, file) {
-        if(err) {
-          return sendError(res, err.message || err, 501);
-        }
+    fs.readFile(filePath, function(err, file) {
+      if(err) {
+        return sendError(res, err.message || err, 501);
+      }
 
-        if(fileName.endsWith('json')){
-          res.writeHead(200, { "Content-Type": "application/json" });
-        } else if(fileName.endsWith('xml')){
-          res.writeHead(200, { "Content-Type": "application/xml" });
-        } else {
-          res.writeHead(200, {
-            "Content-Type": String(req.body.defaultContentType || contentType)
-          });
-        }
+      if(filePath.endsWith('json')){
+        res.writeHead(200, { "Content-Type": "application/json" });
+      } else if(filePath.endsWith('xml')){
+        res.writeHead(200, { "Content-Type": "application/xml" });
+      } else {
+        res.writeHead(200, {
+          "Content-Type": String(req.query.defaultContentType || "application/x-octet-stream")
+        });
+      }
 
-        res.write(file);
-        res.end();
-      });
+      res.write(file);
+      res.end();
     });
   });
 }
