@@ -11,8 +11,11 @@ const fs = require('fs'), path = require('path'),
   CombinedStream = require('combined-stream'), uuid = require('uuid'),
   setHeaders = require('request/lib/multipart').Multipart.prototype.setHeaders;
 
-function getParsedResponse(opts,res){
-  var dicer = parser.parse(null, opts.state, {boundary:parser.isMultipartBody(opts.headers)});
+function getParsedResponse(opts,res, parserObject){
+  var dicer = parser.parse(null, opts.state, {
+    parserObject : parserObject,
+    boundary:parser.isMultipartBody(opts.headers)
+  });
   res.pipe(dicer);
   return dicer;
 }
@@ -93,10 +96,18 @@ require('request/lib/multipart').Multipart.prototype.build = function (parts, ch
   parts.forEach(function (part) {
     var defaultBoundary = handlePartHeader(part,chunked);
     var preamble = '--' + self.boundary + '\r\n'
-    Object.keys(part).forEach(function (key) {
-      if (key === 'body') { return }
-      preamble += key + ': ' + part[key] + '\r\n'
-    })
+    var upon = part;
+    if(typeof upon === 'object' && upon !== null){
+      if(typeof upon.headers === 'object' && upon.headers !== null){
+        var hdrs = upon.headers;
+        delete upon.headers;
+        upon = hdrs;
+      }
+      Object.keys(upon).forEach(function (key) {
+        if (key === 'body') { return }
+        preamble += key + ': ' + upon[key] + '\r\n'
+      })
+    }
     preamble += '\r\n'
     add(preamble)
     add(part.body,defaultBoundary)
@@ -255,14 +266,14 @@ function func(req,res,next){
     toSend.multipart = bds;
   }
   var ars = {},
-      toParse = utils.lastValue(req.body, 'options', 'parseResponse') === true,
+      toParse = utils.lastValue(req.body, 'options', 'parser'),
       mainRequest = null,
       statusCode = 0;
 
   var send = function(body){
     res.send({
-      body: body, 
-      headers: mainRequest.response.headers, 
+      body: body,
+      headers: mainRequest.response.headers,
       statusCode: mainRequest.response.statusCode
     });
   };
@@ -271,9 +282,7 @@ function func(req,res,next){
     send(err || body || (rs && res.body));
   };
 
-  if(!toParse){
-    mainRequest = request(toSend, cbs);
-  } else {
+  if(typeof toParse === 'object' && toParse !== null && Object.keys(toParse).length){
     mainRequest = request(toSend);
 
     mainRequest.once('response',function(){
@@ -281,7 +290,7 @@ function func(req,res,next){
         headers : mainRequest.response.headers,
         state : {},
       }
-      var dicer = getParsedResponse(opts, mainRequest);
+      var dicer = getParsedResponse(opts, mainRequest, toParse);
 
       dicer.once('_finish', function(){
         send(opts.state);
@@ -292,6 +301,8 @@ function func(req,res,next){
       send = function(){};
       res.send(400, { message : err.message || err })
     });
+  } else {
+    mainRequest = request(toSend, cbs);
   }
 }
 
