@@ -9,10 +9,6 @@ const fs = require('fs'), path = require('path'),
       ],
       request = require('request').defaults({ json : true });
 
-function parseAFile(raw){
-  return raw;
-}
-
 function getParsedResponse(opts,res){
   return parser(res,opts.body, {boundary:parser.isMultipartBody(opts.headers)});
 }
@@ -97,7 +93,7 @@ require('request/lib/multipart').Multipart.prototype.build = function (parts, ch
   parts.forEach(function (part) {
     var defaultBoundary = handlePartHeader(part,chunked);
     var preamble = '--' + self.boundary + '\r\n'
-    Object.keys(part).forEach(function (key) {
+    Object.keys(part.headers || part).forEach(function (key) {
       if (key === 'body') { return }
       preamble += key + ': ' + part[key] + '\r\n'
     })
@@ -260,7 +256,7 @@ function func(req,res,next){
   }
   var multiBody = [],
       ars = {},
-      toParse = utils.lastValue(req.body, 'options', 'parseResponse') === true,
+      toParse = utils.lastValue(req.body, 'options', 'parser'),
       foundAct = false,
       foundMulti = Boolean(!(toParse));
   var checkAndSend = function(){
