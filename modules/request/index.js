@@ -1,25 +1,21 @@
 
 const fs = require('fs'), path = require('path'),
-      querystring = require('querystring'),
-      parser = require('./parser'),
-      utils = require('../../utils'),
-      allowedOptions = [
-        'preambleCRLF','postambleCRLF','timeout',
-        'auth','oauth','encoding','gzip'
-      ],
-      request = require('request').defaults({ json : true });
-
-function parseAFile(raw){
-  return raw;
-}
+  querystring = require('querystring'),
+  parser = require('./parser'),
+  utils = require('../../utils'),
+  allowedOptions = [
+    'preambleCRLF','postambleCRLF','timeout',
+    'auth','oauth','encoding','gzip'
+  ],
+  request = require('request').defaults({ json : true }),
+  CombinedStream = require('combined-stream'), uuid = require('uuid'),
+  setHeaders = require('request/lib/multipart').Multipart.prototype.setHeaders;
 
 function getParsedResponse(opts,res){
-  return parser(res,opts.body, {boundary:parser.isMultipartBody(opts.headers)});
+  var dicer = parser.parse(null, opts.state, {boundary:parser.isMultipartBody(opts.headers)});
+  res.pipe(dicer);
+  return dicer;
 }
-
-var CombinedStream = require('combined-stream'), uuid = require('uuid');
-
-var setHeaders = require('request/lib/multipart').Multipart.prototype.setHeaders;
 
 function handlePartHeader(part,chunked){
   if(Array.isArray(part.body) && part.body.length > 1){
@@ -112,7 +108,7 @@ require('request/lib/multipart').Multipart.prototype.build = function (parts, ch
     add('\r\n')
   }
 
-  return body
+  return body;
 }
 
 const encoders = function(ab){
@@ -258,54 +254,42 @@ function func(req,res,next){
     }
     toSend.multipart = bds;
   }
-  var multiBody = [],
-      ars = {},
+  var ars = {},
       toParse = utils.lastValue(req.body, 'options', 'parseResponse') === true,
-      foundAct = false,
-      foundMulti = Boolean(!(toParse));
-  var checkAndSend = function(){
-    if(foundAct && foundMulti){
-      if(toParse){
-        res.send({ actual : ars, multipart : multiBody });
-      } else {
-        res.send(ars);
-      }
-    }
+      mainRequest = null,
+      statusCode = 0;
+
+  var send = function(body){
+    res.send({
+      body: body, 
+      headers: mainRequest.response.headers, 
+      statusCode: mainRequest.response.statusCode
+    });
   };
-  var checkMulti = function(){
-    foundMulti = true;
-    checkAndSend();
+
+  var cbs = function(err, rs, body){
+    send(err || body || (rs && res.body));
   };
-  var cbs = function(err,rs,body){
-    if(err) {
-      ars.error = err;
-    }
-    if(body){
-      ars.output = body;
-    }
-    if(ars){
-      if(ars.statusCode) {
-        ars.statusCode = ars.statusCode;
-      }
-      if(!(ars.output) && ars.body){
-        ars.output = ars.body;
-      }
-    }
-    foundAct = true;
-    checkAndSend();
-  };
-  var mainRequest = request(toSend,cbs);
-  if(toParse){
+
+  if(!toParse){
+    mainRequest = request(toSend, cbs);
+  } else {
+    mainRequest = request(toSend);
+
     mainRequest.once('response',function(){
-      getParsedResponse({
+      var opts = {
         headers : mainRequest.response.headers,
-        body : multiBody
-      }, mainRequest.responseContent)
-      .once('_finish',checkMulti);
+        state : {},
+      }
+      var dicer = getParsedResponse(opts, mainRequest);
+
+      dicer.once('_finish', function(){
+        send(opts.state);
+      });
     });
     mainRequest.once('error',function(err){
-      checkAndSend = function(){};
-      checkMulti = function(){};
+      console.log("error", err);
+      send = function(){};
       res.send(400, { message : err.message || err })
     });
   }
