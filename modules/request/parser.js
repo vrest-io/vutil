@@ -104,8 +104,8 @@ var parser = {
         error,
         partErrors = 0;
     if(!mainDicer) {
-      mainDicer.evs = 1;
       mainDicer = dicer;
+      mainDicer.evs = 1;
     }
     dicer.mainDicer = mainDicer;
     dicer.b = opts.boundary;
