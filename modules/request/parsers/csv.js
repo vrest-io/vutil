@@ -1,7 +1,7 @@
 
 var csvtojson = require('csvtojson');
 
-module.exports = function(data,opts,next){
+module.exports = function(data, opts, next){
   if(typeof next !== 'function') next = function(ab){ return ab; };
   var out = [];
   var checkOn, c2j = csvtojson(opts);

@@ -12,7 +12,8 @@
     "mysql": "^2.13.0",
     "pg": "^6.1.5",
     "restify": "^4.3.0",
-    "request": "^2.81.0"
+    "request": "^2.81.0",
+    "xml2js": "0.4.4"
   },
   "bin":{
     "vutil-server":"server.js"

@@ -2,12 +2,12 @@ var Dicer = require('dicer'),
     fs = require('fs'),
     streamBuffers = require('stream-buffers');
 
-function parseFromRequire(type,cont,next){
+function parseFromRequire(type, cont, next){
   switch(type){
-    case 'csv' : return require('./parsers/csv')(cont,{},next);
-    case 'xml' : return require('./parsers/xml')(cont,{},next);
-    case 'json' : return require('./parsers/json')(cont,{},next);
-    default : return require('./parsers/default')(cont,{},next);
+    case 'csv' : return require('./parsers/csv')(cont, {}, next);
+    case 'xml' : return require('./parsers/xml')(cont, {}, next);
+    case 'json' : return require('./parsers/json')(cont, {}, next);
+    default : return require('./parsers/default')(cont, {}, next);
   }
 }
 
@@ -21,11 +21,17 @@ function getContentTypeKey(hdr){
   }
 }
 
+function finish(dicer){
+  if(dicer.evs === 0 && dicer.parts === 0){
+    dicer.emit("_finish");
+  }
+}
+
 var parser = {
-  isMultipartBody: function(header,cont){
+  isMultipartBody: function(header, cont){
     if(typeof header === 'object' && header){
       var contentType = header["content-type"];
-      var bndr,hdk;
+      var bndr, hdk;
       if(contentType){
         if(Array.isArray(contentType)){
           for(var i = 0; i < contentType.length; i++){
@@ -41,8 +47,8 @@ var parser = {
           hdk = getContentTypeKey(String(contentType[i]));
         }
       }
-      if(bndr){
-        if(cont) return [bndr,hdk];
+      if(bndr || hdk){
+        if(cont) return [bndr, hdk];
         else return bndr;
       }
     }
@@ -91,7 +97,7 @@ var parser = {
     p.on('header', function(h) {
       if(!p.isMultipart){
         part.header = h;
-        var mulres = parser.isMultipartBody(h,cont);
+        var mulres = parser.isMultipartBody(h, true);
         var boundary = mulres[0];
         parseType = mulres[1];
         if(boundary){
@@ -121,19 +127,20 @@ var parser = {
       }
     }).on('end', function() {
       if(!p.isMultiPart){
-        if (part.body)
+        if (part.body){
           part.body = Buffer.concat(part.body, part.bodylen).toString();
+        }
+        parseFromRequire(parseType, part.body, function(err, body){
+          if(err){
+            part.parserError = err;
+          }
+          if(body !== undefined){
+            part.body = body;
+          }
+          dicer.emit('part_end');
+        });
       }
-      part.body = parseFromRequire(parseType, part.body, function(err,body){
-        if(err){
-          part.parserError = err;
-        }
-        if(body !== undefined){
-          part.body = body;
-        }
-        state.parts.push(part);
-        dicer.emit('one_finish');
-      });
+      state.parts.push(part);
     });
   },
 
@@ -147,6 +154,7 @@ var parser = {
         partErrors = 0;
     if(!mainDicer) {
       mainDicer = dicer;
+      mainDicer.parts = 0;
       mainDicer.evs = 1;
     }
     dicer.mainDicer = mainDicer;
@@ -155,11 +163,15 @@ var parser = {
       parser.handlePreamble(p, state, dicer);
     });
     dicer.on('part', function(p) {
+      mainDicer.parts++;
       parser.handlePart(p, state, dicer, opts.parserObject);
+    }).on('part_end', function(){
+      mainDicer.parts--;
+      finish(mainDicer);
     }).on('error', function(err) {
       console.log("err", err);
       error = err;
-    }).on('one_finish', function(){
+    }).on('finish', function(){
       if(mainPart){
         var len = 0;
         for(var i = 0, count = state.parts.length; i < count; i++){
@@ -168,9 +180,7 @@ var parser = {
         mainPart.bodylen = len;
       }
       mainDicer.evs--;
-      if(mainDicer.evs === 0){
-        mainDicer.emit("_finish");
-      }
+      finish(mainDicer);
     });
 
     return dicer;

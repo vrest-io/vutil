@@ -1,5 +1,5 @@
 
-var xml2js = require('xml2js').parseString, builder = new xml2js.Builder({cdata : true});
+var xml2js = require('xml2js').parseString;//, builder = new xml2js.Builder({cdata : true});
 
 function afterString(data,next){
   xml2js(data,next);
