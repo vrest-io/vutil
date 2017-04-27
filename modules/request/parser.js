@@ -12,16 +12,16 @@ var Dicer = require('dicer'),
     streamBuffers = require('stream-buffers');
 
 function parseFromRequire(type, cont, next){
-  var tp;
+  var tp, opts = (type && type.options || {});
   if(typeof type === 'string'){
     tp = type;
   } else if(typeof type.processor === 'string'){
     tp = type.processor;
   }
   if(parsersMap[tp]){
-    return parsersMap.csv(cont, type.options || {}, next);
+    return parsersMap[tp](cont, opts, next);
   } else {
-    return parsersMap.default(cont, (type && type.options || {}), next);
+    return parsersMap.default(cont, opts, next);
   }
 }
 
@@ -33,11 +33,11 @@ function getContentTypeKey(hdr){
   } else if(String(hdr).indexOf("xml") !== -1){
     return 'xml';
   } else if(String(hdr).indexOf("img") !== -1){
-    return 'img';
+    return 'checksum';
   } else if(String(hdr).indexOf("vedio") !== -1){
-    return 'vedio';
+    return 'checksum';
   } else if(String(hdr).indexOf("audio") !== -1){
-    return 'audio';
+    return 'checksum';
   }
 }
 
@@ -58,13 +58,13 @@ var parser = {
             if(String(contentType[i]).indexOf("multipart") !== -1){
               bndr = String(contentType[i]).replace(/.*boundary=([^\s;]+).*/, '$1');
             } else {
-              hdk = getContentTypeKey(String(contentType[i]));
+              hdk = String(contentType[i]);
             }
           }
         } else if(String(contentType).indexOf("multipart") !== -1){
           bndr = String(contentType).replace(/.*boundary=([^\s;]+).*/, '$1');
         } else {
-          hdk = getContentTypeKey(String(contentType[i]));
+          hdk = String(contentType[i]);
         }
       }
       if(bndr || hdk){
@@ -150,7 +150,8 @@ var parser = {
         if (part.body){
           part.body = Buffer.concat(part.body, part.bodylen).toString();
         }
-        parseFromRequire(parserObject[parseType] || parseType, part.body, function(err, body){
+        parseFromRequire((parserObject[parseType] || getContentTypeKey(parseType)),
+            part.body, function(err, body){
           if(err){
             part.parserError = err;
           }
