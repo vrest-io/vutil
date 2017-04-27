@@ -1,5 +1,18 @@
 
-const driver = require('oracledb'), conf = { };
+try {
+  const driver = require('oracledb');
+} catch(er){
+  console.log('Please execute `npm install oracledb` to get oracle db support.');
+  console.log('After this is installed, please restart the server.');
+  const driver = {
+    getConnection : function(inp,cb){
+      cb('Support for `oracledb` is not available. '+
+          'Please execute `npm install oracledb` and restart the server.');
+    }
+  }
+}
+
+const conf = { };
 const utils = require('../../../utils');
 
 function func(vars,methods,next){

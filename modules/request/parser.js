@@ -1,13 +1,27 @@
 var Dicer = require('dicer'),
     fs = require('fs'),
+    parsersMap = {
+      csv:require('./parsers/csv'),
+      xml:require('./parsers/xml'),
+      json:require('./parsers/json'),
+      blank:require('./parsers/blank'),
+      base64:require('./parsers/base64'),
+      checksum:require('./parsers/checksum'),
+      default:require('./parsers/default')
+    },
     streamBuffers = require('stream-buffers');
 
 function parseFromRequire(type, cont, next){
-  switch(type){
-    case 'csv' : return require('./parsers/csv')(cont, {}, next);
-    case 'xml' : return require('./parsers/xml')(cont, {}, next);
-    case 'json' : return require('./parsers/json')(cont, {}, next);
-    default : return require('./parsers/default')(cont, {}, next);
+  var tp;
+  if(typeof type === 'string'){
+    tp = type;
+  } else if(typeof type.processor === 'string'){
+    tp = type.processor;
+  }
+  if(parsersMap[tp]){
+    return parsersMap.csv(cont, type.options || {}, next);
+  } else {
+    return parsersMap.default(cont, (type && type.options || {}), next);
   }
 }
 
@@ -15,9 +29,15 @@ function getContentTypeKey(hdr){
   if(String(hdr).indexOf("json") !== -1){
     return 'json';
   } else if(String(hdr).indexOf("csv") !== -1){
-    return 'json';
+    return 'csv';
   } else if(String(hdr).indexOf("xml") !== -1){
     return 'xml';
+  } else if(String(hdr).indexOf("img") !== -1){
+    return 'img';
+  } else if(String(hdr).indexOf("vedio") !== -1){
+    return 'vedio';
+  } else if(String(hdr).indexOf("audio") !== -1){
+    return 'audio';
   }
 }
 
@@ -130,7 +150,7 @@ var parser = {
         if (part.body){
           part.body = Buffer.concat(part.body, part.bodylen).toString();
         }
-        parseFromRequire(parseType, part.body, function(err, body){
+        parseFromRequire(parserObject[parseType] || parseType, part.body, function(err, body){
           if(err){
             part.parserError = err;
           }

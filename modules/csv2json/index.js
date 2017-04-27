@@ -13,7 +13,7 @@ function func(req,res,next){
   }
   csvtojson(fs.createReadStream(req.body.filePath),req.body.options,function(err,out){
     if(err) res.send({ error : err });
-    else res.send({ out : out });
+    else res.send({ output : out });
   });
 }
 

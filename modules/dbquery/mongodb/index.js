@@ -1,6 +1,8 @@
 
 const client = require('mongodb').MongoClient, conf = {};
+const ObjectId = require('mongodb').ObjectId.createFromHexString, conf = {};
 const utils = require('../../../utils');
+const MONGOID_REG = /^(?=[a-f\d]{24}$)(\d+[a-f]|[a-f]+\d)/i;
 
 /*
  * Payload
@@ -51,6 +53,12 @@ function func(vars,methods,next){
           next({ output : rs, status : 200 });
         }
       };
+      utils.objwalk(function(obj, key, rt){
+        if(typeof obj === 'string' && obj.test(MONGOID_REG)){
+          rt[key] = ObjectId(obj);
+          rt[key]['$W_END']=true;
+        }
+      },query.args);
       if(typeof cur.then === 'function'){
         cur.then(callback.bind(null,null),callback.bind(null));
       } else if(typeof cur.toArray === 'function'){
