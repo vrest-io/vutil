@@ -5,6 +5,8 @@ var Dicer = require('dicer'),
       xml:require('./parsers/xml'),
       json:require('./parsers/json'),
       blank:require('./parsers/blank'),
+      base64:require('./parsers/base64'),
+      checksum:require('./parsers/checksum'),
       default:require('./parsers/default')
     },
     streamBuffers = require('stream-buffers');
@@ -16,12 +18,10 @@ function parseFromRequire(type, cont, next){
   } else if(typeof type.processor === 'string'){
     tp = type.processor;
   }
-  switch(tp){
-    case 'csv' : return parsersMap.csv(cont, type.options || {}, next);
-    case 'xml' : return parsersMap.xml(cont, type.options || {}, next);
-    case 'json' : return parsersMap.json(cont, type.options || {}, next);
-    case 'blank' : return parsersMap.blank(cont, type.options || {}, next);
-    default : return parsersMap.default(cont, (type && type.options || {}), next);
+  if(parsersMap[tp]){
+    return parsersMap.csv(cont, type.options || {}, next);
+  } else {
+    return parsersMap.default(cont, (type && type.options || {}), next);
   }
 }
 
@@ -32,6 +32,12 @@ function getContentTypeKey(hdr){
     return 'csv';
   } else if(String(hdr).indexOf("xml") !== -1){
     return 'xml';
+  } else if(String(hdr).indexOf("img") !== -1){
+    return 'img';
+  } else if(String(hdr).indexOf("vedio") !== -1){
+    return 'vedio';
+  } else if(String(hdr).indexOf("audio") !== -1){
+    return 'audio';
   }
 }
 
@@ -144,7 +150,7 @@ var parser = {
         if (part.body){
           part.body = Buffer.concat(part.body, part.bodylen).toString();
         }
-        parseFromRequire(parserObject[parseType], part.body, function(err, body){
+        parseFromRequire(parserObject[parseType] || parseType, part.body, function(err, body){
           if(err){
             part.parserError = err;
           }
