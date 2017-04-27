@@ -266,7 +266,7 @@ function func(req,res,next){
     toSend.multipart = bds;
   }
   var ars = {},
-      toParse = utils.lastValue(req.body, 'options', 'parser'),
+      toParse = utils.lastValue(req.body, 'options', 'processors'),
       mainRequest = null,
       statusCode = 0;
 

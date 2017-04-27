@@ -1,13 +1,27 @@
 var Dicer = require('dicer'),
     fs = require('fs'),
+    parsersMap = {
+      csv:require('./parsers/csv'),
+      xml:require('./parsers/xml'),
+      json:require('./parsers/json'),
+      blank:require('./parsers/blank'),
+      default:require('./parsers/default')
+    },
     streamBuffers = require('stream-buffers');
 
 function parseFromRequire(type, cont, next){
-  switch(type){
-    case 'csv' : return require('./parsers/csv')(cont, {}, next);
-    case 'xml' : return require('./parsers/xml')(cont, {}, next);
-    case 'json' : return require('./parsers/json')(cont, {}, next);
-    default : return require('./parsers/default')(cont, {}, next);
+  var tp;
+  if(typeof type === 'string'){
+    tp = type;
+  } else if(typeof type.processor === 'string'){
+    tp = type.processor;
+  }
+  switch(tp){
+    case 'csv' : return parsersMap.csv(cont, type.options || {}, next);
+    case 'xml' : return parsersMap.xml(cont, type.options || {}, next);
+    case 'json' : return parsersMap.json(cont, type.options || {}, next);
+    case 'blank' : return parsersMap.blank(cont, type.options || {}, next);
+    default : return parsersMap.default(cont, (type && type.options || {}), next);
   }
 }
 
@@ -15,7 +29,7 @@ function getContentTypeKey(hdr){
   if(String(hdr).indexOf("json") !== -1){
     return 'json';
   } else if(String(hdr).indexOf("csv") !== -1){
-    return 'json';
+    return 'csv';
   } else if(String(hdr).indexOf("xml") !== -1){
     return 'xml';
   }
@@ -130,7 +144,7 @@ var parser = {
         if (part.body){
           part.body = Buffer.concat(part.body, part.bodylen).toString();
         }
-        parseFromRequire(parseType, part.body, function(err, body){
+        parseFromRequire(parserObject[parseType], part.body, function(err, body){
           if(err){
             part.parserError = err;
           }
