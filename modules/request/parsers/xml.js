@@ -47,7 +47,13 @@ function parseString(xml){
 }
 
 function afterString(data,next){
-  next(null, xmlToJson(parseString(data)));
+  var res;
+  try {
+    res = xmlToJson(parseString(data));
+  } catch(erm){
+    return next(erm)
+  }
+  next(null, res);
 };
 
 module.exports = function(data,opts,next){
