@@ -1,43 +1,65 @@
 var Dicer = require('dicer'),
     fs = require('fs'),
     parsersMap = {
-      csv:require('./parsers/csv'),
-      xml:require('./parsers/xml'),
-      json:require('./parsers/json'),
-      blank:require('./parsers/blank'),
-      base64:require('./parsers/base64'),
-      checksum:require('./parsers/checksum'),
-      default:require('./parsers/default')
+      "csv2json": require('./parsers/csv2json'),
+      "xml2json": require('./parsers/xml2json'),
+      json: require('./parsers/json'),
+      blank: require('./parsers/blank'),
+      base64: require('./parsers/base64'),
+      checksum: require('./parsers/checksum'),
+      string: require('./parsers/string')
     },
     streamBuffers = require('stream-buffers');
 
-function parseFromRequire(type, cont, next){
-  var tp, opts = (type && type.options || {});
-  if(typeof type === 'string'){
-    tp = type;
-  } else if(typeof type.processor === 'string'){
-    tp = type.processor;
-  }
-  if(parsersMap[tp]){
-    return parsersMap[tp](cont, opts, next);
-  } else {
-    return parsersMap.default(cont, opts, next);
-  }
+function isBinary(content){
+  //return /[\x00-\x1F\x80-\xFF]/.test(content);
+  var result = content.match(/[\x00-\x1F\x80-\xFF]/);
+  return result;
 }
 
-function getContentTypeKey(hdr){
-  if(String(hdr).indexOf("json") !== -1){
-    return 'json';
-  } else if(String(hdr).indexOf("csv") !== -1){
-    return 'csv';
-  } else if(String(hdr).indexOf("xml") !== -1){
-    return 'xml';
-  } else if(String(hdr).indexOf("img") !== -1){
-    return 'checksum';
-  } else if(String(hdr).indexOf("vedio") !== -1){
-    return 'checksum';
-  } else if(String(hdr).indexOf("audio") !== -1){
-    return 'checksum';
+function getDefaultProcessor(contentType, content){
+  var processor = null;
+  if(contentType.indexOf("json") !== -1){
+    processor = "json";
+  } else if(contentType.indexOf("xml") !== -1){
+    processor = "xml2json";
+  } else if(contentType.indexOf("csv") !== -1){
+    processor = "csv2json";
+  } else if(isBinary(content)){
+    processor = "checksum";
+  } else {
+    processor = "string";
+  }
+
+  return processor;
+}
+
+function parseFromRequire(contentType, parserObject, content, next){
+  contentType = contentType.toLowerCase();
+  var keys = Object.keys(parserObject), i, count, key;
+  var processor = null, opts = {};
+  for(i = 0, count = keys.length; i < count; i++){
+    key = keys[i].toLowerCase();
+    if(contentType.indexOf(key) !== -1){
+      processor = parserObject[keys[i]]; //do not change keys[i] to key here
+      if(typeof processor === 'object'){
+        processor = processor.processor;
+        if(processor.options){
+          opts = processor.options;  
+        }
+      }
+      break;
+    }
+  }
+
+  if(!processor){ //if no processor for this content type specified, pick a default one
+    processor = getDefaultProcessor(contentType, content);
+  }
+
+  if(parsersMap[processor]){ //if processor found
+    return parsersMap[processor](content, opts, next);
+  } else {
+    return next('Processor "'+processor+'" not found.');
   }
 }
 
@@ -112,14 +134,14 @@ var parser = {
       bodylen: 0,
       error: undefined,
       header: undefined
-    }, parseType;
+    }, contentType;
 
     p.on('header', function(h) {
       if(!p.isMultipart){
         part.header = h;
         var mulres = parser.isMultipartBody(h, true);
         var boundary = mulres[0];
-        parseType = mulres[1];
+        contentType = mulres[1];
         if(boundary){
           //dicer.setBoundary(boundary);
           part.body = {};
@@ -150,8 +172,7 @@ var parser = {
         if (part.body){
           part.body = Buffer.concat(part.body, part.bodylen).toString();
         }
-        parseFromRequire((parserObject[parseType] || getContentTypeKey(parseType)),
-            part.body, function(err, body){
+        parseFromRequire(contentType, parserObject, part.body, function(err, body){
           if(err){
             part.parserError = err;
           }
@@ -160,6 +181,8 @@ var parser = {
           }
           dicer.emit('part_end');
         });
+      } else {
+        dicer.emit('part_end');
       }
       state.parts.push(part);
     });

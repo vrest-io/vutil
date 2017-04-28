@@ -1,5 +1,5 @@
 
-const csvtojson = require('../../modules/request/parsers/csv'),
+const csvtojson = require('../../modules/request/parsers/csv2json'),
       utils = require('../../utils'),
       path = require('path'), fs = require('fs');
 

@@ -13,11 +13,17 @@ function func(vars,methods,next){
       next({ message : (vars.messages[ert] || ert), status : 400 });
     } else {
       var request = new mssql.Request(con);
-      request.query(query, function(err, recordset) {
+      request.query(query, function(err, recordset, rowsAffected) {
         if(err) {
           next({ message : (vars.messages.queryfail+(err.message || '')), status : 400 });
         } else {
-          next({ output : recordset, status : 200 });
+          var output = recordset;
+          if(!output){
+            output = {
+              rowsAffected: rowsAffected
+            };
+          }
+          next({ output : output, status : 200 });
         }
       });
     }
