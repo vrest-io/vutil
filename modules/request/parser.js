@@ -13,9 +13,7 @@ var Dicer = require('dicer'),
 
 function isBinary(content){
   //return /[\x00-\x1F\x80-\xFF]/.test(content);
-  console.log(typeof content);
   var result = content.match(/[\x00-\x1F\x80-\xFF]/);
-  console.log(result);
   return result;
 }
 
@@ -28,7 +26,6 @@ function getDefaultProcessor(contentType, content){
   } else if(contentType.indexOf("csv") !== -1){
     processor = "csv2json";
   } else if(isBinary(content)){
-    console.log("binary content: ", content);
     processor = "checksum";
   } else {
     processor = "string";
@@ -38,11 +35,13 @@ function getDefaultProcessor(contentType, content){
 }
 
 function parseFromRequire(contentType, parserObject, content, next){
-  var keys = Object.keys(parserObject), i, count;
+  contentType = contentType.toLowerCase();
+  var keys = Object.keys(parserObject), i, count, key;
   var processor = null, opts = {};
   for(i = 0, count = keys.length; i < count; i++){
-    if(contentType.indexOf(keys[i]) !== -1){
-      processor = parserObject[keys[i]];
+    key = keys[i].toLowerCase();
+    if(contentType.indexOf(key) !== -1){
+      processor = parserObject[keys[i]]; //do not change keys[i] to key here
       if(typeof processor === 'object'){
         processor = processor.processor;
         if(processor.options){
