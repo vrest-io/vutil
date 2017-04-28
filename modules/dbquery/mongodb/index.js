@@ -1,6 +1,6 @@
 
 const client = require('mongodb').MongoClient, conf = {};
-const ObjectId = require('mongodb').ObjectId.createFromHexString, conf = {};
+const ObjectId = require('mongodb').ObjectId.createFromHexString;
 const utils = require('../../../utils');
 const MONGOID_REG = /^(?=[a-f\d]{24}$)(\d+[a-f]|[a-f]+\d)/i;
 

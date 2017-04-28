@@ -266,7 +266,8 @@ function func(req,res,next){
     toSend.multipart = bds;
   }
   var ars = {},
-      toParse = utils.lastValue(req.body, 'options', 'processors'),
+      toParse = utils.lastValue(req.body, 'options', 'parseMultipart'),
+      processMap = utils.lastValue(req.body, 'options', 'process'),
       mainRequest = null,
       statusCode = 0;
 
@@ -282,7 +283,7 @@ function func(req,res,next){
     send(err || body || (rs && res.body));
   };
 
-  if(typeof toParse === 'object' && toParse !== null && Object.keys(toParse).length){
+  if(toParse === true){
     mainRequest = request(toSend);
 
     mainRequest.once('response',function(){
@@ -290,7 +291,7 @@ function func(req,res,next){
         headers : mainRequest.response.headers,
         state : {},
       }
-      var dicer = getParsedResponse(opts, mainRequest, toParse);
+      var dicer = getParsedResponse(opts, mainRequest, processMap);
 
       dicer.once('_finish', function(){
         send(opts.state);
