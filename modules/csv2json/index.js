@@ -12,7 +12,7 @@ function func(req,res,next){
     return res.send(400, { message : "Parameter `filePath` was missing in request." });
   }
   csvtojson(fs.createReadStream(req.body.filePath),req.body.options,function(err,out){
-    if(err) res.send({ error : err });
+    if(err) res.send(400,{ message : err });
     else res.send({ output : out });
   });
 }
