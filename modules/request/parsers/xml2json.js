@@ -37,7 +37,8 @@ function xmlToJson(xml) {
         }
         obj[nodeName].push(xmlToJson(item));
       }
-      if((String(nodeName) === 'undefined') || (!(Object.key(obj[nodeName]).length))){
+      if((String(nodeName) === 'undefined') ||
+          (String(nodeName) === '#text' && !(Object.key(obj[nodeName]).length))){
         delete obj[nodeName];
       }
     }
