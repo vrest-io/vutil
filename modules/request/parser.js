@@ -9,12 +9,12 @@ var Dicer = require('dicer'),
       checksum: require('./parsers/checksum'),
       string: require('./parsers/string')
     },
+    //http://stackoverflow.com/questions/1677644/detect-non-printable-characters-in-javascript
+    forBin = /[\x00-\x08\x0E-\x1F]/,
     streamBuffers = require('stream-buffers');
 
 function isBinary(content){
-  //return /[\x00-\x1F\x80-\xFF]/.test(content);
-  var result = content.match(/[\x00-\x1F\x80-\xFF]/);
-  return result;
+  return Boolean(forBin.match(forBin));
 }
 
 function getDefaultProcessor(contentType, content){
@@ -45,7 +45,7 @@ function parseFromRequire(contentType, parserObject, content, next){
       if(typeof processor === 'object'){
         processor = processor.processor;
         if(processor.options){
-          opts = processor.options;  
+          opts = processor.options;
         }
       }
       break;
