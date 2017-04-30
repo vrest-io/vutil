@@ -267,7 +267,7 @@ function func(req,res,next){
   }
   var ars = {},
       toParse = utils.lastValue(req.body, 'options', 'parseMultipart'),
-      processMap = utils.lastValue(req.body, 'options', 'process'),
+      processMap = utils.lastValue(req.body, 'options', 'process') || {},
       mainRequest = null,
       statusCode = 0;
 

@@ -43,7 +43,7 @@ function xmlToJson(xml) {
 };
 
 function parseString(xml){
-  return domParser.parseFromString(xml,'application/xml')
+  return DOMParser.parseFromString(xml,'application/xml')
 }
 
 function afterString(data,next){
@@ -51,7 +51,8 @@ function afterString(data,next){
   try {
     res = xmlToJson(parseString(data));
   } catch(erm){
-    return next(erm)
+    console.log("error: ", erm);
+    return next(erm.message);
   }
   next(null, res);
 };

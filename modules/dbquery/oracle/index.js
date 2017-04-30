@@ -26,7 +26,7 @@ function func(vars,methods,next){
       next({ message : (vars.messages[ert] || ert), status : 400 });
     } else {
       con.execute(query, function(err, recordset) {
-        con.close();
+        //con.close();
         if(err) {
           next({ message : (vars.messages.queryfail+(err.message || '')), status : 400 });
         } else {

@@ -43,15 +43,15 @@ function parseFromRequire(contentType, parserObject, content, next){
     if(contentType.indexOf(key) !== -1){
       processor = parserObject[keys[i]]; //do not change keys[i] to key here
       if(typeof processor === 'object'){
-        processor = processor.processor;
         if(processor.options){
           opts = processor.options;  
         }
+        processor = processor.processor;
       }
       break;
     }
   }
-
+  
   if(!processor){ //if no processor for this content type specified, pick a default one
     processor = getDefaultProcessor(contentType, content);
   }
