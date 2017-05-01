@@ -1,5 +1,4 @@
-var crypto = require('crypto'),
-  Readable = require('stream').Readable;
+var crypto = require('crypto');
 
 function getHash(type){
   if(!type) type = 'md5';

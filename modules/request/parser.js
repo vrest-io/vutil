@@ -1,17 +1,18 @@
 var Dicer = require('dicer'),
-    fs = require('fs'),
-    parsersMap = {
-      "csv2json": require('./parsers/csv2json'),
-      "xml2json": require('./parsers/xml2json'),
-      json: require('./parsers/json'),
-      blank: require('./parsers/blank'),
-      base64: require('./parsers/base64'),
-      checksum: require('./parsers/checksum'),
-      string: require('./parsers/string')
-    },
-    //http://stackoverflow.com/questions/1677644/detect-non-printable-characters-in-javascript
-    forBin = /[\x00-\x08\x0E-\x1F]/,
-    streamBuffers = require('stream-buffers');
+  Readable = require('stream').Readable,
+  fs = require('fs'),
+  parsersMap = {
+    "csv2json": require('./parsers/csv2json'),
+    "xml2json": require('./parsers/xml2json'),
+    json: require('./parsers/json'),
+    blank: require('./parsers/blank'),
+    base64: require('./parsers/base64'),
+    checksum: require('./parsers/checksum'),
+    string: require('./parsers/string')
+  },
+  //http://stackoverflow.com/questions/1677644/detect-non-printable-characters-in-javascript
+  forBin = /[\x00-\x08\x0E-\x1F]/,
+  streamBuffers = require('stream-buffers');
 
 function isBinary(content){
   return Boolean(content.match(forBin));
@@ -35,47 +36,51 @@ function getDefaultProcessor(contentType, content){
 }
 
 function parseFromRequire(contentType, parserObject, content, next){
-  contentType = contentType.toLowerCase();
-  var keys = Object.keys(parserObject), i, count, key;
-  var processor = null, opts = {};
+  if(contentType){
+    contentType = contentType.toLowerCase();
+    var keys = Object.keys(parserObject), i, count, key;
+    var processor = null, opts = {};
 
-  var handleProcessor = function(){
-    if(typeof processor === 'object'){
-      if(processor.options){
-        opts = processor.options;
+    var handleProcessor = function(){
+      if(typeof processor === 'object'){
+        if(processor.options){
+          opts = processor.options;
+        }
+        processor = processor.processor;
       }
-      processor = processor.processor;
+    };
+
+    for(i = 0, count = keys.length; i < count; i++){
+      key = keys[i].toLowerCase();
+      if(contentType.indexOf(key) !== -1){
+        processor = parserObject[keys[i]]; //do not change keys[i] to key here
+        handleProcessor(processor);
+        break;
+      }
     }
-  };
 
-  for(i = 0, count = keys.length; i < count; i++){
-    key = keys[i].toLowerCase();
-    if(contentType.indexOf(key) !== -1){
-      processor = parserObject[keys[i]]; //do not change keys[i] to key here
-      handleProcessor(processor);
-      break;
+    if(!processor && parserObject["default"]){
+      processor = parserObject["default"];
+      handleProcessor();
     }
-  }
 
-  if(!processor && parserObject["default"]){
-    processor = parserObject["default"];
-    handleProcessor();
-  }
+    if(!processor){ //if no processor for this content type specified, pick a default one
+      processor = getDefaultProcessor(contentType, content);
+    }
 
-  if(!processor){ //if no processor for this content type specified, pick a default one
-    processor = getDefaultProcessor(contentType, content);
-  }
-  
-  if(parsersMap[processor]){ //if processor found
-    return parsersMap[processor](content, opts, next);
+    if(parsersMap[processor]){ //if processor found
+      return parsersMap[processor](content, opts, next);
+    } else {
+      return next('Processor "'+processor+'" not found.');
+    }  
   } else {
-    return next('Processor "'+processor+'" not found.');
+    return next(null, content);
   }
 }
 
 function finish(dicer){
   if(dicer.evs === 0 && dicer.parts === 0){
-    dicer.emit("_finish");
+    dicer.emit("_finish", dicer.state);
   }
 }
 
@@ -157,11 +162,10 @@ var parser = {
           part.body = {};
           p.isMultiPart = true;
           dicer.mainDicer.evs++;
-          var d = parser.parse(part, part.body, {
+          var d = parser.parse(p, part, part.body, {
             parserObject : parserObject,
             boundary: boundary
           }, dicer.mainDicer);
-          p.pipe(d);
         }
       }
     }).on('data', function(data) {
@@ -198,46 +202,67 @@ var parser = {
     });
   },
 
-  parse: function(mainPart, state, opts, mainDicer) {
-    var buffer = new Buffer(32);
-    state.parts = [];
-    state.preamble = undefined;
+  parse: function(stream, mainPart, state, opts, mainDicer) {
+    if(opts.boundary){ //if multipart body
+      state = state || {};
+      state.parts = [];
+      state.preamble = undefined;
 
-    var dicer = new Dicer(opts),
+      var dicer = new Dicer(opts),
         error,
         partErrors = 0;
-    if(!mainDicer) {
-      mainDicer = dicer;
-      mainDicer.parts = 0;
-      mainDicer.evs = 1;
-    }
-    dicer.mainDicer = mainDicer;
-    dicer.b = opts.boundary;
-    dicer.on('preamble', function(p) {
-      parser.handlePreamble(p, state, dicer);
-    });
-    dicer.on('part', function(p) {
-      mainDicer.parts++;
-      parser.handlePart(p, state, dicer, opts.parserObject);
-    }).on('part_end', function(){
-      mainDicer.parts--;
-      finish(mainDicer);
-    }).on('error', function(err) {
-      console.log("err", err);
-      error = err;
-    }).on('finish', function(){
-      if(mainPart){
-        var len = 0;
-        for(var i = 0, count = state.parts.length; i < count; i++){
-          len += state.parts[i].bodylen;
-        }
-        mainPart.bodylen = len;
-      }
-      mainDicer.evs--;
-      finish(mainDicer);
-    });
 
-    return dicer;
+      if(!mainDicer) {
+        mainDicer = dicer;
+        mainDicer.state = state;
+        mainDicer.parts = 0;
+        mainDicer.evs = 1;
+      }
+      dicer.mainDicer = mainDicer;
+      dicer.b = opts.boundary;
+      dicer.on('preamble', function(p) {
+        parser.handlePreamble(p, state, dicer);
+      });
+      dicer.on('part', function(p) {
+        mainDicer.parts++;
+        parser.handlePart(p, state, dicer, opts.parserObject);
+      }).on('part_end', function(){
+        mainDicer.parts--;
+        finish(mainDicer);
+      }).on('error', function(err) {
+        console.log("err", err);
+        error = err;
+      }).on('finish', function(){
+        if(mainPart){
+          var len = 0;
+          for(var i = 0, count = state.parts.length; i < count; i++){
+            len += state.parts[i].bodylen;
+          }
+          mainPart.bodylen = len;
+        }
+        mainDicer.evs--;
+        finish(mainDicer);
+      });
+      stream.pipe(dicer);
+      return dicer;
+    } else {
+      var body = [], bodylen = 0;
+      stream.on('data', function(data){
+        body.push(data);
+        bodylen += data.length;
+      });
+      stream.on('end', function(){
+        body = Buffer.concat(body, bodylen).toString();
+        parseFromRequire(opts.contentType, opts.parserObject, body, function(err, body){
+          var result = err;
+          if(!result && body !== undefined){
+            result = body;
+          }
+          stream.emit('_finish', result);
+        });
+      });
+      return stream;
+    }
   }
 };
 

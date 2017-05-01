@@ -20,13 +20,20 @@ FormData.prototype.getBoundary = function(){
   return this._boundary;
 };
 
+function getContentType(headers){
+  for(var key in headers){
+    if(key.toLowerCase() === "content-type") return headers[key];
+  }
+  return null;
+}
+
 function getParsedResponse(opts,res, parserObject){
-  var dicer = parser.parse(null, opts.state, {
-    parserObject : parserObject,
-    boundary:parser.isMultipartBody(opts.headers)
+  var stream = parser.parse(res, null, null, {
+    parserObject: parserObject,
+    boundary: parser.isMultipartBody(opts.headers),
+    contentType: getContentType(opts.headers)
   });
-  res.pipe(dicer);
-  return dicer;
+  return stream;
 }
 
 const encoders = function(ab){
@@ -244,10 +251,10 @@ function func(req,res,next){
     headers : req.body.headers || {}
   };
 
-  if(typeof req.body.options === 'object' && req.body.options){
+  if(typeof req.body.requestOptions === 'object' && req.body.requestOptions){
     allowedOptions.forEach(function(op){
-      if(req.body.options[op] !== undefined){
-        toSend[op] = req.body.options[op];
+      if(req.body.requestOptions[op] !== undefined){
+        toSend[op] = req.body.requestOptions[op];
       }
     });
   }
@@ -277,8 +284,8 @@ function func(req,res,next){
   }
 
   var ars = {},
-      toParse = utils.lastValue(req.body, 'options', 'parseMultipart'),
-      processMap = utils.lastValue(req.body, 'options', 'process') || {},
+      toParse = utils.lastValue(req.body, 'responseOptions', 'parse'),
+      processMap = utils.lastValue(req.body, 'responseOptions', 'process') || {},
       mainRequest = null,
       statusCode = 0;
 
@@ -299,13 +306,12 @@ function func(req,res,next){
 
     mainRequest.once('response',function(){
       var opts = {
-        headers : mainRequest.response.headers,
-        state : {},
+        headers : mainRequest.response.headers
       }
-      var dicer = getParsedResponse(opts, mainRequest, processMap);
 
-      dicer.once('_finish', function(){
-        send(opts.state);
+      var stream = getParsedResponse(opts, mainRequest, processMap);
+      stream.once('_finish', function(state){
+        send(state);
       });
     });
     mainRequest.once('error',function(err){
