@@ -14,7 +14,7 @@ var Dicer = require('dicer'),
     streamBuffers = require('stream-buffers');
 
 function isBinary(content){
-  return Boolean(forBin.match(forBin));
+  return Boolean(content.match(forBin));
 }
 
 function getDefaultProcessor(contentType, content){
@@ -38,24 +38,34 @@ function parseFromRequire(contentType, parserObject, content, next){
   contentType = contentType.toLowerCase();
   var keys = Object.keys(parserObject), i, count, key;
   var processor = null, opts = {};
+
+  var handleProcessor = function(){
+    if(typeof processor === 'object'){
+      if(processor.options){
+        opts = processor.options;
+      }
+      processor = processor.processor;
+    }
+  };
+
   for(i = 0, count = keys.length; i < count; i++){
     key = keys[i].toLowerCase();
     if(contentType.indexOf(key) !== -1){
       processor = parserObject[keys[i]]; //do not change keys[i] to key here
-      if(typeof processor === 'object'){
-        if(processor.options){
-          opts = processor.options;
-        }
-        processor = processor.processor;
-      }
+      handleProcessor(processor);
       break;
     }
   }
-  
+
+  if(!processor && parserObject["default"]){
+    processor = parserObject["default"];
+    handleProcessor();
+  }
+
   if(!processor){ //if no processor for this content type specified, pick a default one
     processor = getDefaultProcessor(contentType, content);
   }
-
+  
   if(parsersMap[processor]){ //if processor found
     return parsersMap[processor](content, opts, next);
   } else {
@@ -103,11 +113,11 @@ var parser = {
       body: undefined,
       bodylen: 0,
       error: undefined,
-      header: undefined
+      headers: undefined
     };
 
     p.on('header', function(h) {
-      preamble.header = h;
+      preamble.headers = h;
     }).on('data', function(data) {
       // make a copy because we are using readSync which re-uses a buffer ...
       var copy = new Buffer(data.length);
@@ -133,12 +143,12 @@ var parser = {
       body: undefined,
       bodylen: 0,
       error: undefined,
-      header: undefined
+      headers: undefined
     }, contentType;
 
     p.on('header', function(h) {
       if(!p.isMultipart){
-        part.header = h;
+        part.headers = h;
         var mulres = parser.isMultipartBody(h, true);
         var boundary = mulres[0];
         contentType = mulres[1];

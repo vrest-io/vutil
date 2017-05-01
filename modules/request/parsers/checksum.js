@@ -1,5 +1,5 @@
-
-var crypto = require('crypto');
+var crypto = require('crypto'),
+  Readable = require('stream').Readable;
 
 function getHash(type){
   if(!type) type = 'md5';
@@ -7,21 +7,8 @@ function getHash(type){
 }
 
 function calculateHash(stream,hash,next,into){
-  if(typeof stream.on !== 'function'){
-    try {
-      stream = Buffer.from(stream);
-    } catch(erm){
-      return next(erm.message||erm);
-    }
-  }
-  stream.on('readable', () => {
-    const data = stream.read();
-    if (data){
-      hash.update(data);
-    } else {
-      next(null,hash.digest(into||'hex'));
-    }
-  });
+  hash.update(stream);
+  next( null, hash.digest(into || 'hex'));
 }
 
 module.exports = function(data,opts,next){

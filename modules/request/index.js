@@ -9,7 +9,16 @@ const fs = require('fs'), path = require('path'),
   ],
   request = require('request').defaults({ json : true }),
   CombinedStream = require('combined-stream'), uuid = require('uuid'),
-  setHeaders = require('request/lib/multipart').Multipart.prototype.setHeaders;
+  setHeaders = require('request/lib/multipart').Multipart.prototype.setHeaders,
+  FormData = require('form-data/lib/form_data');
+
+FormData.prototype.getBoundary = function(){
+  if (!this._boundary) {
+    this._generateBoundary();
+  }
+
+  return this._boundary;
+};
 
 function getParsedResponse(opts,res, parserObject){
   var dicer = parser.parse(null, opts.state, {
@@ -20,15 +29,46 @@ function getParsedResponse(opts,res, parserObject){
   return dicer;
 }
 
-function handlePartHeader(part,chunked){
+const encoders = function(ab){
+  try {
+    return require(ab).encode();
+  } catch(erm) {
+    return false;
+  }
+};
+
+const getParamValue = function(obj){
+  
+  if(typeof obj === "object" && obj !== null && typeof obj.filePath === 'string'){
+    var enc = obj.encode;
+    var st;
+    
+    try { 
+      st = fs.accessSync(obj.filePath, fs.constants.F_OK); 
+    } catch(er){ return false; }
+    
+    var ret = fs.createReadStream(obj.filePath);
+    if(typeof enc === 'string'){
+      var enc = encoders(enc);
+      if(enc){
+        ret.pipe(enc);
+      }
+    }
+    return ret;
+  } else {
+    return obj;
+  }
+};
+
+function handlePartHeader(part, chunked){
   if(Array.isArray(part.body) && part.body.length > 1){
     var plk = Object.keys(part), pln = plk.length;
     var that = {
       boundary : uuid(),
       request : {
         getHeader : function(ky){
-          for(var z=0;z<pln;z++){
-            if(plk[z].toLowerCase()===ky.toLowerCase()){
+          for(var z = 0; z < pln; z++){
+            if(plk[z].toLowerCase() === ky.toLowerCase()){
               return (part[plk[z]]);
             }
           }
@@ -37,9 +77,9 @@ function handlePartHeader(part,chunked){
         hasHeader : function(ky){
           return Boolean(this.getHeader(ky));
         },
-        setHeader : function(ky,vl){
-          for(var st = true, z=0;z<pln;z++){
-            if(plk[z].toLowerCase()===ky.toLowerCase()){
+        setHeader : function(ky, vl){
+          for(var st = true, z = 0; z < pln; z++){
+            if(plk[z].toLowerCase() === ky.toLowerCase()){
               part[plk[z]] = vl;
               st = false;
               break;
@@ -62,7 +102,7 @@ require('request/lib/multipart').Multipart.prototype.build = function (parts, ch
   var self = this
   var body = chunked ? new CombinedStream() : []
 
-  function add (part,boundary) {
+  function add(part, boundary) {
     if (typeof part === 'number') {
       part = part.toString()
     // change part starts
@@ -77,9 +117,9 @@ require('request/lib/multipart').Multipart.prototype.build = function (parts, ch
           self.boundary = prvB;
         }
       } else if(part.filePath){
-        var part = getFile(part,true);
+        var part = getParamValue(part);
         if(part === false){
-          self.request.emit('error', new Error('File path not found at `'+part.filePath+'`'));
+          self.request.emit('error', new Error('File path not found at `' + part.filePath + '`'));
           part = '';
         }
       }
@@ -94,23 +134,23 @@ require('request/lib/multipart').Multipart.prototype.build = function (parts, ch
 
 
   parts.forEach(function (part) {
-    var defaultBoundary = handlePartHeader(part,chunked);
+    if(typeof part.headers === 'object' && part.headers !== null){
+      Object.keys(part.headers).forEach(function(key){
+        part[key] = part.headers[key];
+      });
+      delete part.headers;
+    }
+    var defaultBoundary = handlePartHeader(part, chunked);
     var preamble = '--' + self.boundary + '\r\n'
-    var upon = part;
-    if(typeof upon === 'object' && upon !== null){
-      if(typeof upon.headers === 'object' && upon.headers !== null){
-        var hdrs = upon.headers;
-        delete upon.headers;
-        upon = hdrs;
-      }
-      Object.keys(upon).forEach(function (key) {
+    if(typeof part === 'object' && part !== null){
+      Object.keys(part).forEach(function (key) {
         if (key === 'body') { return }
-        preamble += key + ': ' + upon[key] + '\r\n'
+        preamble += key + ': ' + part[key] + '\r\n'
       })
     }
     preamble += '\r\n'
     add(preamble)
-    add(part.body,defaultBoundary)
+    add(part.body, defaultBoundary)
     add('\r\n')
   })
   add('--' + self.boundary + '--')
@@ -121,42 +161,6 @@ require('request/lib/multipart').Multipart.prototype.build = function (parts, ch
 
   return body;
 }
-
-const encoders = function(ab){
-  try {
-    return require(ab).encode();
-  } catch(erm) {
-    return false;
-  }
-};
-
-const getFile = function(ab,nostr){
-  if(typeof ab === 'string'){
-    if(nostr) return ab;
-    var st;
-    try{ st = fs.accessSync(ab,fs.constants.F_OK); }catch(er){return false; }
-    return fs.createReadStream(ab);
-  } else if(typeof ab === 'object' && ab){
-    if(Array.isArray(ab)){
-      return ab;
-    } else if(typeof ab.filePath === 'string'){
-      var enc = ab.encode;
-      var st;
-      try{ st = fs.accessSync(ab.filePath,fs.constants.F_OK); }catch(er){
-        return false; }
-      var ret = fs.createReadStream(ab.filePath);
-      if(typeof enc === 'string'){
-        var enc = encoders(enc);
-        if(enc){
-          ret.pipe(enc);
-        }
-      }
-      return ret;
-    }
-  } else {
-    return false;
-  }
-};
 
 /*
  * fileForm {
@@ -182,8 +186,6 @@ const getFile = function(ab,nostr){
       <fileForm>
     ]
  * },
- * filePath : <filepath that to be attached to form data>
- * fileKey : <filekey for above filepath>
  * multipart : ArrayOf(fileForm)
  * options : {
  *  above available options plus parseResponse to parse multipart response
@@ -205,22 +207,25 @@ function func(req,res,next){
   var formData = {}, rs, kl, kn, bd = req.body.formData;
   if(typeof bd === 'object' && bd){
     for(var ky in bd){
-      if(ky === 'attachments' && Array.isArray(bd[ky])){
-        kn = bd[ky], kl = kn.length;
-        for(var z=0;z<kl;z++){
-          rs = getFile(kn[z]);
+      kn = bd[ky];
+      if(ky === 'attachments' && Array.isArray(kn)){
+        kl = kn.length;
+        for(var z = 0; z < kl; z++){
+          rs = getParamValue(kn[z]);
           if(rs) {
             kn[z] = rs;
           } else {
-            return res.send(400, { message : "File to upload not found." });
+            return res.send(400, { message : 'File "' + kn[z] +'" to upload not found.' });
           }
         }
+        formData["attachments"] = kn;
       } else {
-        formData[ky] = getFile(bd,true);
+        formData[ky] = getParamValue(kn);
       }
     }
   }
-  if(req.body.filePath){
+
+  /*if(req.body.filePath){
     var fl = 'file1';
     if(utils.isStr(req.body.fileKey) && utils.isAlphaNum(req.body.fileKey)){
       fl = req.body.fileKey;
@@ -231,12 +236,14 @@ function func(req,res,next){
     } else {
       return res.send(400, { message : "File to upload not found at path `"+req.body.filePath+"`." });
     }
-  }
+  }*/
+
   var toSend = {
     method : req.body.method,
     url: req.body.url,
     headers : req.body.headers || {}
   };
+
   if(typeof req.body.options === 'object' && req.body.options){
     allowedOptions.forEach(function(op){
       if(req.body.options[op] !== undefined){
@@ -244,27 +251,31 @@ function func(req,res,next){
       }
     });
   }
+
   if(Object.keys(formData).length){
     toSend.formData = formData;
   }
+
   var jsn = req.body.json;
   if(typeof jsn === 'object' && jsn !== null && Object.keys(jsn).length){
     toSend.json = jsn;
   }
+
   if(Array.isArray(req.body.multipart)){
     var bds = req.body.multipart, ln = bds.length;
-    for(var z=0;z<ln;z++){
+    for(var z = 0; z < ln; z++){
       if(bds[z].body && typeof bds[z].body === 'object' && utils.isStr(bds[z].body.filePath)){
-        rs = getFile(bds[z].body);
+        rs = getParamValue(bds[z].body);
         if(rs){
           bds[z].body = rs;
         } else {
-          return res.send(400, { message : "File to upload not found at path `"+bds[z].body.filePath+"`." });
+          return res.send(400, { message : "File to upload not found at path `" + bds[z].body.filePath + "`." });
         }
       }
     }
     toSend.multipart = bds;
   }
+
   var ars = {},
       toParse = utils.lastValue(req.body, 'options', 'parseMultipart'),
       processMap = utils.lastValue(req.body, 'options', 'process') || {},
@@ -274,8 +285,8 @@ function func(req,res,next){
   var send = function(body){
     res.send({
       body: body,
-      headers: mainRequest.response.headers,
-      statusCode: mainRequest.response.statusCode
+      headers: mainRequest.response && mainRequest.response.headers,
+      statusCode: mainRequest.response && mainRequest.response.statusCode
     });
   };
 
