@@ -124,9 +124,10 @@ require('request/lib/multipart').Multipart.prototype.build = function (parts, ch
           self.boundary = prvB;
         }
       } else if(part.filePath){
+        var filePath = part.filePath;
         var part = getParamValue(part);
         if(part === false){
-          self.request.emit('error', new Error('File path not found at `' + part.filePath + '`'));
+          self.request.emit('error', new Error('File path not found at `' + filePath + '`'));
           part = '';
         }
       }
@@ -232,18 +233,7 @@ function func(req,res,next){
     }
   }
 
-  /*if(req.body.filePath){
-    var fl = 'file1';
-    if(utils.isStr(req.body.fileKey) && utils.isAlphaNum(req.body.fileKey)){
-      fl = req.body.fileKey;
-    }
-    rs = getFile(req.body);
-    if(rs) {
-      formData[fl] = rs;
-    } else {
-      return res.send(400, { message : "File to upload not found at path `"+req.body.filePath+"`." });
-    }
-  }*/
+  var requestOptions = req.body.requestOptions;
 
   var toSend = {
     method : req.body.method,
@@ -251,7 +241,7 @@ function func(req,res,next){
     headers : req.body.headers || {}
   };
 
-  if(req.headers.authorization){
+  if(req.headers.authorization && (!requestOptions || !requestOptions.oauth)){
     toSend.headers.authorization = req.headers.authorization;
   }
 
