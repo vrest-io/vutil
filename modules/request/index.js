@@ -45,15 +45,15 @@ const encoders = function(ab){
 };
 
 const getParamValue = function(obj){
-  
+
   if(typeof obj === "object" && obj !== null && typeof obj.filePath === 'string'){
     var enc = obj.encode;
     var st;
-    
-    try { 
-      st = fs.accessSync(obj.filePath, fs.constants.F_OK); 
+
+    try {
+      st = fs.accessSync(obj.filePath, fs.constants.F_OK);
     } catch(er){ return false; }
-    
+
     var ret = fs.createReadStream(obj.filePath);
     if(typeof enc === 'string'){
       var enc = encoders(enc);
@@ -250,6 +250,10 @@ function func(req,res,next){
     url: req.body.url,
     headers : req.body.headers || {}
   };
+
+  if(req.headers.authorization){
+    toSend.headers.authorization = req.headers.authorization;
+  }
 
   if(typeof req.body.requestOptions === 'object' && req.body.requestOptions){
     allowedOptions.forEach(function(op){
