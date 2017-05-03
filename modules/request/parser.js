@@ -18,6 +18,11 @@ function isBinary(content){
   return Boolean(content.match(forBin));
 }
 
+function arrayOrSingle(inp){
+  if(Array.isArray(inp) && inp.length === 1) return inp[0];
+  else return inp;
+}
+
 function getDefaultProcessor(contentType, content){
   var processor = null;
   if(contentType.indexOf("json") !== -1){
@@ -72,7 +77,7 @@ function parseFromRequire(contentType, parserObject, content, next){
       return parsersMap[processor](content, opts, next);
     } else {
       return next('Processor "'+processor+'" not found.');
-    }  
+    }
   } else {
     return next(null, content);
   }
@@ -122,7 +127,7 @@ var parser = {
     };
 
     p.on('header', function(h) {
-      preamble.headers = h;
+      preamble.headers = arrayOrSingle(h);
     }).on('data', function(data) {
       // make a copy because we are using readSync which re-uses a buffer ...
       var copy = new Buffer(data.length);
@@ -153,7 +158,7 @@ var parser = {
 
     p.on('header', function(h) {
       if(!p.isMultipart){
-        part.headers = h;
+        part.headers = arrayOrSingle(h);
         var mulres = parser.isMultipartBody(h, true);
         var boundary = mulres[0];
         contentType = mulres[1];

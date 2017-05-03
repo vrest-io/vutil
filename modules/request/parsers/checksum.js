@@ -6,10 +6,24 @@ function getHash(type){
 }
 
 function calculateHash(stream,hash,next,into){
-  hash.update(stream);
-  next( null, hash.digest(into || 'hex'));
+  if(stream){
+    hash.update(stream);
+  }
+  if(typeof next === 'function'){
+    next( null, hash.digest(into || 'hex'));
+  }
 }
 
 module.exports = function(data,opts,next){
-  calculateHash(data,getHash(opts.hashType),next, opts.hexEncoding);
+  var hash = getHash(opts.hashType);
+  if(typeof data === 'string'){
+    calculateHash(data, hash, next, opts.hexEncoding);
+  } else {
+    data.on('readable', () => {
+      const dt = stream.read();
+      calculateHash(dt,hash,dt?false:next,opts.hexEncoding);
+    }).on('error',(err)=>{
+      next(erm.message || err || 'Unable to calculate checksum.');
+    });
+  }
 }
