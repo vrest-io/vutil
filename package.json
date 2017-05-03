@@ -6,14 +6,20 @@
   "dependencies": {
     "csvtojson": "^1.1.4",
     "mongodb": "^2.2.25",
-    "mmmagic":"^0.4.5",
     "dicer": "^0.2.5",
     "mssql": "^3.3.0",
     "stream-buffers":"^3.0.1",
     "mysql": "^2.13.0",
     "pg": "^6.1.5",
     "restify": "^4.3.0",
-    "request": "^2.81.0"
+    "request": "^2.81.0",
+    "xmldom": "0.1.27"
+  },
+  "bin":{
+    "vutil-server":"server.js"
+  },
+  "engines": {
+    "node": ">= 6.0.0"
   },
   "licenses": [
     {

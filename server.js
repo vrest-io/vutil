@@ -1,6 +1,15 @@
 const restify = require('restify');
 const pckg = require('./package.json');
-const activatedModules = require('./config.json').activatedModules || {};
+const configFilePath = (process.env.CONFIG || './config.sample.json');
+var mainConfig;
+
+try {
+  mainConfig = require('./config.json');
+} catch(erm){
+  mainConfig = require(configFilePath);
+}
+
+const activatedModules = mainConfig.activatedModules || {};
 var server = restify.createServer({
   handleUncaughtExceptions : false,
   name : pckg.name+'@'+pckg.version

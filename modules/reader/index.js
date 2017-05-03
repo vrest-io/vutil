@@ -1,5 +1,4 @@
-var path = require("path"), fs = require("fs"),
-mmm = require("mmmagic");
+var path = require("path"), fs = require("fs");
 
 function sendError(res,msg,st){
   res.writeHead(st, {"Content-Type": "application/json"});
@@ -26,29 +25,26 @@ function func(req, res) {
       return sendError(res,"The path is a directory. Please provide a path of file", 400);
     }
 
-    var magic = new mmm.Magic(mmm.MAGIC_MIME_TYPE);
-    magic.detectFile(filePath, function(err, contentType) {
-      if(err) return sendError(res, 'Error while detecting the mime type for file.', 400);
-      if(contentType.indexOf("text") === -1){
-        return sendError(res, 'File type not supported', 400);
+    fs.readFile(filePath, function(err, file) {
+      if(err) {
+        return sendError(res, err.message || err, 501);
       }
 
-      fs.readFile(filePath, function(err, file) {
-        if(err) {
-          return sendError(res, err.message || err, 501);
-        }
-
+      var contentType = String(req.query.contentType);
+      if(!contentType){
         if(filePath.endsWith('json')){
-          res.writeHead(200, { "Content-Type": "application/json" });
+          contentType = "application/json";
+          
         } else if(filePath.endsWith('xml')){
-          res.writeHead(200, { "Content-Type": "application/xml" });
+          contentType = "application/xml";
         } else {
-          res.writeHead(200, { "Content-Type": contentType });
+          contentType = "application/octet-stream";
         }
+      }
 
-        res.write(file);
-        res.end();
-      });
+      res.writeHead(200, { "Content-Type":  contentType});
+      res.write(file);
+      res.end();
     });
   });
 }
