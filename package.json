@@ -1,22 +1,22 @@
 {
   "name": "vutil",
   "description": "vREST Utility",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "main": "index.js",
   "dependencies": {
     "csvtojson": "^1.1.4",
     "mongodb": "^2.2.25",
     "dicer": "^0.2.5",
     "mssql": "^3.3.0",
-    "stream-buffers":"^3.0.1",
+    "stream-buffers": "^3.0.1",
     "mysql": "^2.13.0",
     "pg": "^6.1.5",
     "restify": "^4.3.0",
     "request": "^2.81.0",
     "xmldom": "0.1.27"
   },
-  "bin":{
-    "vutil-server":"server.js"
+  "bin": {
+    "vutil-server": "server.js"
   },
   "engines": {
     "node": ">= 6.0.0"
