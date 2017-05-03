@@ -5,7 +5,9 @@ function func(vars,methods){
   var query = utils.lastValue(vars.params, 'body','query');
   switch(utils.lastValue(vars,'connType')){
     case 'mysql' :
+    case 'mssql' :
     case 'postgres' :
+    case 'oracle' :
       return (typeof query === 'string' && query.length);
     case 'mongodb' :
       query = (query || utils.lastValue(vars.params, 'body'));

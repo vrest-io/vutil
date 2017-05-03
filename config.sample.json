@@ -3,6 +3,7 @@
     "dbquery" : true,
     "command" : true,
     "csv2json" : true,
+    "request" : true,
     "file" : true
   },
   "db" : {
@@ -27,6 +28,17 @@
         }
       },
       {
+        "name" : "alphaNumericConnectionName3",
+        "type" : "mssql",
+        "specifyConfigAs":"https://www.npmjs.com/package/mssql#general-same-for-all-drivers",
+        "config" : {
+            "server"     : "localhost",
+            "user"     : "username",
+            "password" : "password",
+            "database" : "test"
+        }
+      },
+      {
         "name" : "alphaNumericConnectionName4",
         "type" : "postgres",
         "specifyConfigAs":"https://www.npmjs.com/package/pg",
@@ -38,6 +50,16 @@
           "port": 5432,
           "max": 10,
           "idleTimeoutMillis": 30000
+        }
+      },
+      {
+        "name" : "alphaNumericConnectionName5",
+        "type" : "oracle",
+        "specifyConfigAs":"https://github.com/oracle/node-oracledb/blob/master/doc/api.md#-332-oracledbgetconnection",
+        "config" : {
+            "connectString": "localhost/oracle",
+            "user"     : "user",
+            "password" : "password"
         }
       }
     ]
