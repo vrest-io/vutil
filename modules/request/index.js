@@ -206,6 +206,10 @@ function forOneFilePart(inp){
   if(typeof inp.filePath === 'string' && inp.filePath){
     ret = getParamValue(inp);
     if(typeof inp.options === 'object' && inp.options !== null){
+      if(inp.options.fileName){
+        inp.options.filename = inp.options.fileName;
+        delete inp.options.fileName;
+      }
       ret = { value : ret, options : inp.options };
     }
   }
