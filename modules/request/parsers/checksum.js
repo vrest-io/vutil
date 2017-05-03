@@ -15,13 +15,15 @@ function calculateHash(stream,hash,next,into){
 }
 
 module.exports = function(data,opts,next){
+  var hash = getHash(opts.hashType);
   if(typeof data === 'string'){
-    calculateHash(data,,next, opts.hexEncoding);
+    calculateHash(data, hash, next, opts.hexEncoding);
   } else {
-    var hash = getHash(opts.hashType);
     data.on('readable', () => {
       const dt = stream.read();
       calculateHash(dt,hash,dt?false:next,opts.hexEncoding);
+    }).on('error',(err)=>{
+      next(erm.message || err || 'Unable to calculate checksum.');
     });
   }
 }

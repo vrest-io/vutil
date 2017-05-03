@@ -201,6 +201,16 @@ require('request/lib/multipart').Multipart.prototype.build = function (parts, ch
  *
  * */
 
+function forOneFilePart(inp){
+  var ret = inp;
+  if(typeof inp.filePath === 'string' && inp.filePath){
+    ret = getParamValue(inp);
+    if(typeof inp.options === 'object' && inp.options !== null){
+      ret = { value : ret, options : inp.options };
+    }
+  }
+  return ret;
+}
 
 function func(req,res,next){
   if(!req.body){
@@ -216,19 +226,23 @@ function func(req,res,next){
   if(typeof bd === 'object' && bd){
     for(var ky in bd){
       kn = bd[ky];
-      if(ky === 'attachments' && Array.isArray(kn)){
-        kl = kn.length;
-        for(var z = 0; z < kl; z++){
-          rs = getParamValue(kn[z]);
-          if(rs) {
-            kn[z] = rs;
+      if(kn !== undefined){
+        if(typeof kn !== 'object'){
+          formData[ky] = kn;
+        } else if(kn !== null){
+          if(kn.filePath){
+            formData[ky] = forOneFilePart(kn);
+          } else if(Array.isArray(kn)){
+            formData[ky] = [];
+            kn.forEach((inp)=>{
+              formData[ky].push(forOneFilePart(inp));
+            });
           } else {
-            return res.send(400, { message : 'File "' + kn[z] +'" to upload not found.' });
+            formData[ky] = kn;
           }
+        } else {
+          formData[ky] = kn;
         }
-        formData["attachments"] = kn;
-      } else {
-        formData[ky] = getParamValue(kn);
       }
     }
   }
@@ -241,6 +255,10 @@ function func(req,res,next){
     headers : req.body.headers || {}
   };
 
+  if(Object.keys(formData).length){
+    toSend.formData = formData;
+  }
+
   if(req.headers.authorization && (!requestOptions || !requestOptions.oauth)){
     toSend.headers.authorization = req.headers.authorization;
   }
@@ -251,10 +269,6 @@ function func(req,res,next){
         toSend[op] = req.body.requestOptions[op];
       }
     });
-  }
-
-  if(Object.keys(formData).length){
-    toSend.formData = formData;
   }
 
   var jsn = req.body.json;
