@@ -23,6 +23,14 @@ function arrayOrSingle(inp){
   else return inp;
 }
 
+function patchHeaders(headers){
+  var result = {};
+  for(var name in headers){
+    result[name] = arrayOrSingle(headers[name]);
+  }
+  return result;
+}
+
 function getDefaultProcessor(contentType, content){
   var processor = null;
   if(contentType.indexOf("json") !== -1){
@@ -127,7 +135,7 @@ var parser = {
     };
 
     p.on('header', function(h) {
-      preamble.headers = arrayOrSingle(h);
+      preamble.headers = patchHeaders(h);
     }).on('data', function(data) {
       // make a copy because we are using readSync which re-uses a buffer ...
       var copy = new Buffer(data.length);
@@ -158,7 +166,7 @@ var parser = {
 
     p.on('header', function(h) {
       if(!p.isMultipart){
-        part.headers = arrayOrSingle(h);
+        part.headers = patchHeaders(h);
         var mulres = parser.isMultipartBody(h, true);
         var boundary = mulres[0];
         contentType = mulres[1];
