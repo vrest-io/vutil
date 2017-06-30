@@ -298,7 +298,7 @@ function func(req,res,next){
   var ars = {},
       toParse = utils.lastValue(req.body, 'responseOptions', 'parse'),
       processMap = utils.lastValue(req.body, 'responseOptions', 'process') || {},
-      mainRequest = null,
+      mainRequest = {},
       statusCode = 0;
 
   var send = function(body){
