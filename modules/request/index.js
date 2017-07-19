@@ -58,7 +58,7 @@ const getParamValue = function(obj){
     if(typeof enc === 'string'){
       var enc = encoders(enc);
       if(enc){
-        ret.pipe(enc);
+        ret = ret.pipe(enc);
       }
     }
     return ret;
