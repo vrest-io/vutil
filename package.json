@@ -1,7 +1,7 @@
 {
   "name": "vutil",
   "description": "vREST Utility",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "main": "index.js",
   "dependencies": {
     "csvtojson": "^1.1.4",
