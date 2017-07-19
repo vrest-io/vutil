@@ -1,4 +1,3 @@
-
 const fs = require('fs'), path = require('path'),
   querystring = require('querystring'),
   parser = require('./parser'),
@@ -36,30 +35,21 @@ function getParsedResponse(opts,res, parserObject){
   return stream;
 }
 
-const encoders = function(ab){
-  try {
-    return require(ab).encode();
-  } catch(erm) {
-    return false;
-  }
-};
-
 const getParamValue = function(obj){
 
   if(typeof obj === "object" && obj !== null && typeof obj.filePath === 'string'){
-    var enc = obj.encode;
+    var readOptions = obj.encode ? { encoding: obj.encode } : undefined;
     var st;
 
     try {
       st = fs.accessSync(obj.filePath, fs.constants.F_OK);
     } catch(er){ return false; }
 
-    var ret = fs.createReadStream(obj.filePath);
-    if(typeof enc === 'string'){
-      var enc = encoders(enc);
-      if(enc){
-        ret = ret.pipe(enc);
-      }
+    var ret;
+    if(obj.sync === true) {
+      ret = fs.readFileSync(obj.filePath, readOptions);
+    } else {
+      ret = fs.createReadStream(obj.filePath, readOptions);
     }
     return ret;
   } else {
@@ -216,15 +206,21 @@ function forOneFilePart(inp){
   return ret;
 }
 
+function resSend(res, st, data) {
+  if(!res.finished) {
+    res.send(st, data);
+  }
+};
+
 function func(req,res,next){
   if(!req.body){
-    return res.send(400, { message : "Invalid request payload" });
+    return resSend(res,400, { message : "Invalid request payload" });
   }
   if(!utils.isStr(req.body.url)){
-    return res.send(400, { message : "Parameter `url` was missing in request." });
+    return resSend(res,400, { message : "Parameter `url` was missing in request." });
   }
   if(!utils.isStr(req.body.method)){
-    return res.send(400, { message : "Parameter `method` was missing in request." });
+    return resSend(res,400, { message : "Parameter `method` was missing in request." });
   }
   var formData = {}, rs, kl, kn, bd = req.body.formData;
   if(typeof bd === 'object' && bd){
@@ -288,7 +284,7 @@ function func(req,res,next){
         if(rs){
           bds[z].body = rs;
         } else {
-          return res.send(400, { message : "File to upload not found at path `" + bds[z].body.filePath + "`." });
+          return resSend(res,400, { message : "File to upload not found at path `" + bds[z].body.filePath + "`." });
         }
       }
     }
@@ -302,7 +298,7 @@ function func(req,res,next){
       statusCode = 0;
 
   var send = function(body){
-    res.send({
+    resSend(res,{
       body: body,
       headers: mainRequest.response && mainRequest.response.headers,
       statusCode: mainRequest.response && mainRequest.response.statusCode
@@ -326,14 +322,13 @@ function func(req,res,next){
         send(state);
       });
     });
-    mainRequest.once('error',function(err){
-      console.log("error", err);
-      send = function(){};
-      res.send(400, { message : err.message || err })
-    });
   } else {
     mainRequest = request(toSend, cbs);
   }
+  mainRequest.once('error',function(err){
+    console.log("error", err.stack);
+    resSend(res,400, { message : err.message || err })
+  });
 }
 
 module.exports = func;
