@@ -1,4 +1,3 @@
-
-module.exports = function(data,opts,next){
+module.exports = function (data, opts, next) {
   next(null, '');
 }

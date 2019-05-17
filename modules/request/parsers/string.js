@@ -1,8 +1,11 @@
-
-module.exports = function(data,opts,next){
+module.exports = function (data, opts, next) {
   try {
-    next(null, (typeof data === 'string' ? data : JSON.stringify(data)));
-  } catch(er){
+    if (Buffer.isBuffer(data)) {
+      next(null, data.toString());
+    } else {
+      next(null, (typeof data === 'string' ? data : JSON.stringify(data)));
+    }
+  } catch (er) {
     next(er.message || er);
   }
 }
