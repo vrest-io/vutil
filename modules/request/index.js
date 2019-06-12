@@ -252,7 +252,8 @@ function func(req,res,next){
   var toSend = {
     method : req.body.method,
     url: req.body.url,
-    headers : req.body.headers || {}
+    headers : req.body.headers || {},
+    strictSSL: false
   };
 
   if(Object.keys(formData).length){
