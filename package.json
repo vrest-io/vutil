@@ -1,7 +1,7 @@
 {
   "name": "vutil",
   "description": "vREST Utility",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "main": "index.js",
   "dependencies": {
     "csvtojson": "^1.1.4",
@@ -22,10 +22,12 @@
   "engines": {
     "node": ">= 6.0.0"
   },
-  "licenses": [{
-    "type": "MIT",
-    "url": "https://github.com/vrest-io/vutil/blob/master/LICENSE-MIT"
-  }],
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/vrest-io/vutil/blob/master/LICENSE-MIT"
+    }
+  ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
