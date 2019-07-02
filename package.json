@@ -1,11 +1,13 @@
 {
   "name": "vutil",
   "description": "vREST Utility",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "main": "index.js",
   "dependencies": {
+    "combined-stream": "^1.0.8",
     "csvtojson": "^1.1.4",
     "dicer": "^0.2.5",
+    "form-data": "^2.4.0",
     "mongodb": "^2.2.25",
     "mssql": "^3.3.0",
     "mysql": "^2.13.0",
@@ -13,6 +15,7 @@
     "request": "^2.81.0",
     "restify": "^4.3.0",
     "stream-buffers": "^3.0.1",
+    "uuid": "^3.3.2",
     "xlsx": "^0.14.3",
     "xmldom": "0.1.27"
   },
